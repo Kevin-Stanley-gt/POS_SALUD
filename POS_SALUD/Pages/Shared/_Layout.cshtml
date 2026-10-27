@@ -1,0 +1,82 @@
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - POS Farma</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="app-shell">
+            <aside class="app-sidebar">
+                <div class="sidebar-brand">
+                    <span class="brand-icon">+</span>
+                    <div>
+                        <div class="brand-title">POS System</div>
+                        <div class="brand-sub">Farmacia</div>
+                    </div>
+                </div>
+                <div class="sidebar-company">
+                    <div class="sidebar-label">Empresa</div>
+                    <div class="sidebar-value">Matriz</div>
+                    <div class="sidebar-label mt-2">Sucursal</div>
+                    <div class="sidebar-value">@(User.FindFirstValue("IdSucursal") is { } s ? "Sucursal " + s : "—")</div>
+                    <div class="sidebar-label mt-2">Usuario</div>
+                    <div class="sidebar-value">@User.Identity.Name</div>
+                    <span class="badge role-badge mt-1">@User.FindFirstValue(ClaimTypes.Role)</span>
+                </div>
+                <div class="sidebar-section">Navegación</div>
+                <nav class="sidebar-nav">
+                    <a class="sidebar-link" asp-page="/Index">Inicio</a>
+                    <details class="sidebar-menu" open>
+                        <summary class="sidebar-section">Operaciones</summary>
+                        <a class="sidebar-link" asp-page="/Jornada/Index">Jornada de caja</a>
+                        <a class="sidebar-link" asp-page="/Ventas/Nueva">Ventas</a>
+                        <a class="sidebar-link" asp-page="/Compras/Nueva">Compras</a>
+                    </details>
+                    <details class="sidebar-menu" open>
+                        <summary class="sidebar-section">Movimientos</summary>
+                        <a class="sidebar-link" asp-page="/Inventario/Index">Inventario</a>
+                        <a class="sidebar-link" asp-page="/Traslados/Index">Traslados</a>
+                    </details>
+                    <details class="sidebar-menu" open>
+                        <summary class="sidebar-section">Maestros</summary>
+                        <a class="sidebar-link" asp-page="/Articulos/Index">Artículos</a>
+                        <a class="sidebar-link" asp-page="/Catalogos/Laboratorios">Laboratorios</a>
+                        <a class="sidebar-link" asp-page="/Catalogos/Genericos">Genéricos</a>
+                        <a class="sidebar-link" asp-page="/Catalogos/Proveedores">Proveedores</a>
+                        <a class="sidebar-link" asp-page="/Catalogos/Clientes">Clientes</a>
+                    </details>
+                </nav>
+                <form method="post" asp-page="/Account/Logout" class="sidebar-logout">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100">Cerrar sesión</button>
+                </form>
+            </aside>
+            <div class="app-content">
+                <header class="app-topbar">
+                    <div class="topbar-search">Buscar módulo o producto…</div>
+                    <div class="topbar-user">
+                        <span class="avatar">@(User.Identity.Name?.Substring(0, 1).ToUpperInvariant())</span>
+                    </div>
+                </header>
+                <main role="main" class="app-main">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    }
+    else
+    {
+        <main role="main" class="container">
+            @RenderBody()
+        </main>
+    }
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

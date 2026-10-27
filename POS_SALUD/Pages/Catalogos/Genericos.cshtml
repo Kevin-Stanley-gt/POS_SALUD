@@ -1,0 +1,83 @@
+@page
+@model POS_SALUD.Pages.Catalogos.GenericosModel
+@{
+    ViewData["Title"] = "Genéricos";
+}
+<div class="page-header">
+    <h1>Genéricos</h1>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNuevo">Nuevo genérico</button>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">Nombre</th>
+                    <th>Estado</th>
+                    <th class="pe-3 text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var g in Model.Items)
+                {
+                    <tr>
+                        <td class="ps-3">@g.Nombre</td>
+                        <td><span class="badge @(g.Activo ? "bg-success" : "bg-secondary")">@(g.Activo ? "Activo" : "Inactivo")</span></td>
+                        <td class="pe-3 text-end">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalToggle@(g.IdGenerico)">@(g.Activo ? "Desactivar" : "Activar")</button>
+                            <div class="modal fade" id="modalToggle@(g.IdGenerico)" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">@(g.Activo ? "Desactivar" : "Activar") genérico</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                        </div>
+                                        <div class="modal-body text-start">¿Confirma cambiar el estado de <strong>@g.Nombre</strong>?</div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form method="post" asp-page-handler="Toggle" asp-route-id="@g.IdGenerico" class="d-inline">
+                                                <button type="submit" class="btn btn-primary">Confirmar</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevo" tabindex="-1" aria-labelledby="modalNuevoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNuevoLabel">Nuevo genérico</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <label asp-for="Input.Nombre" class="form-label"></label>
+                    <input asp-for="Input.Nombre" class="form-control" placeholder="Nombre del genérico" />
+                    <span asp-validation-for="Input.Nombre" class="text-danger small"></span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (ModelState.ErrorCount > 0)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            new bootstrap.Modal(document.getElementById("modalNuevo")).show();
+        });
+    </script>
+}

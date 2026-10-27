@@ -1,0 +1,206 @@
+@page
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model POS_SALUD.Pages.Compras.NuevaModel
+@{
+    ViewData["Title"] = "Nueva compra";
+}
+<div class="page-header">
+    <h1>Registrar compra</h1>
+</div>
+
+@if (Model.MensajeError is not null)
+{
+    <div class="alert alert-danger">@Model.MensajeError</div>
+}
+@if (Model.CompraRegistrada is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        Compra @Model.CompraRegistrada.NumeroDocumento registrada. Total: @Model.CompraRegistrada.Total.ToString("N2")
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<form method="post" id="formCompra">
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label asp-for="Input.IdTipoDocumento" class="form-label"></label>
+                    <select asp-for="Input.IdTipoDocumento" class="form-select" asp-items="@(new SelectList(Model.TiposDocumento, nameof(POS_SALUD.Data.Entities.TipoDocumento.IdTipoDocumento), nameof(POS_SALUD.Data.Entities.TipoDocumento.Nombre)))"></select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Input.IdProveedor" class="form-label"></label>
+                    <select asp-for="Input.IdProveedor" class="form-select" asp-items="@(new SelectList(Model.Proveedores, nameof(POS_SALUD.Data.Entities.Proveedor.IdProveedor), nameof(POS_SALUD.Data.Entities.Proveedor.RazonSocial)))"></select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Input.NumeroDocumento" class="form-label"></label>
+                    <input asp-for="Input.NumeroDocumento" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Input.Observaciones" class="form-label"></label>
+                    <input asp-for="Input.Observaciones" class="form-control" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Detalle de la compra</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarLinea">+ Agregar artículo</button>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Artículo</th>
+                        <th>Lote</th>
+                        <th>Vencimiento</th>
+                        <th style="width:120px">Costo</th>
+                        <th style="width:120px">Cantidad</th>
+                        <th class="text-end" style="width:120px">Subtotal</th>
+                        <th style="width:60px"></th>
+                    </tr>
+                </thead>
+                <tbody id="lineasCompra">
+                    @for (var i = 0; i < Model.Input.Lineas.Count; i++)
+                    {
+                        <tr class="line-row">
+                            <td class="ps-3">
+                                <select name="Input.Lineas[@i].IdArticulo" class="form-select">
+                                    <option value="">-- Seleccione --</option>
+                                    @foreach (var a in Model.Articulos)
+                                    {
+                                        <option value="@a.IdArticulo">@a.Nombre</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input name="Input.Lineas[@i].Lote" class="form-control" /></td>
+                            <td><input name="Input.Lineas[@i].FechaVencimiento" type="date" class="form-control" /></td>
+                            <td><input name="Input.Lineas[@i].CostoUnitario" type="number" step="0.01" min="0" class="form-control linea-costo" /></td>
+                            <td><input name="Input.Lineas[@i].Cantidad" type="number" min="1" value="1" class="form-control linea-cantidad" /></td>
+                            <td class="text-end align-middle linea-subtotal">0.00</td>
+                            <td class="align-middle text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-line" title="Quitar">&times;</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="5" class="text-end">Total estimado</th>
+                        <th class="text-end" id="totalCompra">0.00</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <template id="plantillaLineaCompra">
+        <tr class="line-row">
+            <td class="ps-3">
+                <select class="form-select" data-name="Input.Lineas[__i__].IdArticulo">
+                    <option value="">-- Seleccione --</option>
+                    @foreach (var a in Model.Articulos)
+                    {
+                        <option value="@a.IdArticulo">@a.Nombre</option>
+                    }
+                </select>
+            </td>
+            <td><input class="form-control" data-name="Input.Lineas[__i__].Lote" /></td>
+            <td><input type="date" class="form-control" data-name="Input.Lineas[__i__].FechaVencimiento" /></td>
+            <td><input type="number" step="0.01" min="0" class="form-control linea-costo" data-name="Input.Lineas[__i__].CostoUnitario" /></td>
+            <td><input type="number" min="1" value="1" class="form-control linea-cantidad" data-name="Input.Lineas[__i__].Cantidad" /></td>
+            <td class="text-end align-middle linea-subtotal">0.00</td>
+            <td class="align-middle text-center">
+                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-line" title="Quitar">&times;</button>
+            </td>
+        </tr>
+    </template>
+
+    <div class="d-flex justify-content-end">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalConfirmarCompra">Registrar compra</button>
+    </div>
+
+    <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-labelledby="modalConfirmarCompraLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalConfirmarCompraLabel">Confirmar compra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Desea registrar esta compra? Los lotes se sumarán al inventario de la sucursal.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Sí, registrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        (function () {
+            var tbody = document.getElementById('lineasCompra');
+            var plantilla = document.getElementById('plantillaLineaCompra');
+            var btnAgregar = document.getElementById('btnAgregarLinea');
+            var totalEl = document.getElementById('totalCompra');
+
+            function reindexar() {
+                tbody.querySelectorAll('tr.line-row').forEach(function (fila, i) {
+                    fila.querySelectorAll('select, input').forEach(function (el) {
+                        el.name = el.name.replace(/Input\.Lineas\[\d+\]/, 'Input.Lineas[' + i + ']');
+                    });
+                });
+            }
+
+            function recalcular() {
+                var total = 0;
+                tbody.querySelectorAll('tr.line-row').forEach(function (fila) {
+                    var costo = parseFloat(fila.querySelector('.linea-costo').value) || 0;
+                    var cant = parseFloat(fila.querySelector('.linea-cantidad').value) || 0;
+                    var sub = costo * cant;
+                    fila.querySelector('.linea-subtotal').textContent = sub.toFixed(2);
+                    total += sub;
+                });
+                totalEl.textContent = total.toFixed(2);
+            }
+
+            btnAgregar.addEventListener('click', function () {
+                var fila = plantilla.content.firstElementChild.cloneNode(true);
+                fila.querySelectorAll('[data-name]').forEach(function (el) {
+                    el.name = el.getAttribute('data-name');
+                    el.removeAttribute('data-name');
+                });
+                tbody.appendChild(fila);
+                reindexar();
+                recalcular();
+            });
+
+            tbody.addEventListener('click', function (e) {
+                if (!e.target.classList.contains('btn-remove-line')) {
+                    return;
+                }
+                var filas = tbody.querySelectorAll('tr.line-row');
+                if (filas.length > 1) {
+                    e.target.closest('tr').remove();
+                } else {
+                    filas[0].querySelectorAll('input').forEach(function (el) {
+                        el.value = el.classList.contains('linea-cantidad') ? 1 : '';
+                    });
+                    filas[0].querySelector('select').selectedIndex = 0;
+                }
+                reindexar();
+                recalcular();
+            });
+
+            tbody.addEventListener('input', recalcular);
+            tbody.addEventListener('change', recalcular);
+            recalcular();
+        })();
+    </script>
+}

@@ -1,0 +1,135 @@
+@page
+@model POS_SALUD.Pages.Traslados.IndexModel
+@{
+    ViewData["Title"] = "Traslados";
+}
+<div class="page-header">
+    <h1>Traslados entre sucursales</h1>
+</div>
+
+@if (Model.MensajeError is not null)
+{
+    <div class="alert alert-danger">@Model.MensajeError</div>
+}
+@if (Model.MensajeOk is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @Model.MensajeOk
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<div class="card mb-4">
+    <div class="card-header">Nuevo traslado</div>
+    <div class="card-body">
+        <form method="post">
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label asp-for="Input.IdSucursalDestino" class="form-label">Sucursal destino</label>
+                    <select asp-for="Input.IdSucursalDestino" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        @foreach (var s in Model.Sucursales)
+                        {
+                            <option value="@s.IdSucursal">@s.Nombre</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="Input.Observaciones" class="form-label">Observaciones</label>
+                    <input asp-for="Input.Observaciones" class="form-control" />
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>Lote (artículo / lote / existencia)</th>
+                            <th style="width:140px">Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.Input.Lineas.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    <select name="Input.Lineas[@i].IdArticuloSucursalLote" class="form-select">
+                                        <option value="">-- Seleccione --</option>
+                                        @foreach (var l in Model.LotesDisponibles)
+                                        {
+                                            <option value="@l.IdArticuloSucursalLote">@l.ArticuloSucursal?.Articulo?.Nombre / @l.Lote / @l.Existencia</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td><input name="Input.Lineas[@i].Cantidad" type="number" min="1" value="1" class="form-control" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Enviar traslado</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Historial</div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">#</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Fecha envío</th>
+                    <th>Estado</th>
+                    <th class="pe-3"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model.Traslados)
+                {
+                    var puedeRecibir = t.Estado == "EN_TRANSITO" && t.IdSucursalDestino == int.Parse(User.FindFirst("IdSucursal")?.Value ?? "0");
+                    <tr>
+                        <td class="ps-3">@t.IdTraslado</td>
+                        <td>@t.SucursalOrigen?.Nombre</td>
+                        <td>@t.SucursalDestino?.Nombre</td>
+                        <td>@t.FechaEnvio?.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <span class="badge @(t.Estado == "RECIBIDO" ? "bg-success" : "bg-warning text-dark")">@t.Estado</span>
+                        </td>
+                        <td class="pe-3 text-end">
+                            @if (puedeRecibir)
+                            {
+                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalRecibir@(t.IdTraslado)">Recibir</button>
+
+                                <div class="modal fade" id="modalRecibir@(t.IdTraslado)" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Recibir traslado #@t.IdTraslado</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                Origen: <strong>@t.SucursalOrigen?.Nombre</strong><br />
+                                                ¿Confirma la recepción de la mercadería? Las existencias se sumarán a su sucursal.
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <form method="post" asp-page-handler="Recibir" asp-route-id="@t.IdTraslado" class="d-inline">
+                                                    <button type="submit" class="btn btn-success">Sí, recibir</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

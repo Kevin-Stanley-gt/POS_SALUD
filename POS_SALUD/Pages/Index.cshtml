@@ -1,0 +1,32 @@
+@page
+@model POS_SALUD.Pages.IndexModel
+@{
+    ViewData["Title"] = "Inicio";
+}
+<div class="page-header">
+    <h1>Panel de control</h1>
+    <div class="d-flex gap-2">
+        <a asp-page="/Ventas/Nueva" class="btn btn-primary btn-sm">Nueva venta</a>
+        <a asp-page="/Compras/Nueva" class="btn btn-outline-primary btn-sm">Nueva compra</a>
+    </div>
+</div>
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card stat-card p-3 h-100">
+            <div class="stat-label">Artículos activos</div>
+            <div class="stat-value">@Model.TotalArticulos</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card p-3 h-100" style="border-left-color:#ffc107;">
+            <div class="stat-label">Lotes con existencia que vencen en 60 días</div>
+            <div class="stat-value text-warning">@Model.LotesPorVencer</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card p-3 h-100" style="border-left-color:#dc3545;">
+            <div class="stat-label">Artículos bajo stock mínimo</div>
+            <div class="stat-value text-danger">@Model.ArticulosBajoMinimo</div>
+        </div>
+    </div>
+</div>

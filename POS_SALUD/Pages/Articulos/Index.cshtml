@@ -1,0 +1,107 @@
+@page
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model POS_SALUD.Pages.Articulos.IndexModel
+@{
+    ViewData["Title"] = "Artículos";
+}
+<div class="page-header">
+    <h1>Artículos</h1>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoArticulo">Nuevo artículo</button>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">Código</th>
+                    <th>Nombre</th>
+                    <th>Genérico</th>
+                    <th>Laboratorio</th>
+                    <th class="text-end">Precio</th>
+                    <th class="pe-3">Receta</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model.Articulos)
+                {
+                    <tr>
+                        <td class="ps-3">@a.CodigoBarras</td>
+                        <td>@a.Nombre</td>
+                        <td>@a.Generico?.Nombre</td>
+                        <td>@a.Laboratorio?.Nombre</td>
+                        <td class="text-end">@a.PrecioBase.ToString("N2")</td>
+                        <td class="pe-3">
+                            @if (a.RequiereReceta)
+                            {
+                                <span class="badge bg-warning text-dark">Sí</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">No</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevoArticulo" tabindex="-1" aria-labelledby="modalNuevoArticuloLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNuevoArticuloLabel">Nuevo artículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Input.CodigoBarras" class="form-label"></label>
+                            <input asp-for="Input.CodigoBarras" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.Nombre" class="form-label"></label>
+                            <input asp-for="Input.Nombre" class="form-control" />
+                            <span asp-validation-for="Input.Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.IdGenerico" class="form-label">Genérico</label>
+                            <select asp-for="Input.IdGenerico" class="form-select" asp-items="@(new SelectList(Model.Genericos, nameof(POS_SALUD.Data.Entities.Generico.IdGenerico), nameof(POS_SALUD.Data.Entities.Generico.Nombre)))"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.IdLaboratorio" class="form-label">Laboratorio</label>
+                            <select asp-for="Input.IdLaboratorio" class="form-select" asp-items="@(new SelectList(Model.Laboratorios, nameof(POS_SALUD.Data.Entities.Laboratorio.IdLaboratorio), nameof(POS_SALUD.Data.Entities.Laboratorio.Nombre)))"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Input.PrecioBase" class="form-label"></label>
+                            <input asp-for="Input.PrecioBase" class="form-control" />
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check mb-2">
+                                <input asp-for="Input.RequiereReceta" class="form-check-input" />
+                                <label asp-for="Input.RequiereReceta" class="form-check-label"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (ModelState.ErrorCount > 0)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            new bootstrap.Modal(document.getElementById("modalNuevoArticulo")).show();
+        });
+    </script>
+}

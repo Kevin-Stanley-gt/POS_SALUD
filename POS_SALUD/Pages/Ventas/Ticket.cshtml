@@ -1,0 +1,38 @@
+@page "{id:int}"
+@model POS_SALUD.Pages.Ventas.TicketModel
+@{
+    Layout = "_Print";
+}
+@if (Model.Venta is not null)
+{
+    var v = Model.Venta;
+    <h1>@(v.Sucursal?.Nombre ?? "POS Farma")</h1>
+    <div class="centro">Ticket de venta</div>
+    <hr />
+    <div>No.: @v.NumeroDocumento</div>
+    <div>Fecha: @v.FechaDocumento.ToString("dd/MM/yyyy HH:mm")</div>
+    <div>Cliente: @(v.Cliente?.Nombre ?? "Consumidor final")</div>
+    <hr />
+    <table>
+        <thead>
+            <tr><th>Artículo</th><th class="derecha">Cant</th><th class="derecha">Subtotal</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var d in v.Detalles)
+            {
+                <tr>
+                    <td>@d.Articulo?.Nombre</td>
+                    <td class="derecha">@d.Cantidad</td>
+                    <td class="derecha">@d.Subtotal.ToString("0.00")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <hr />
+    <table>
+        <tr><td class="total">TOTAL</td><td class="derecha total">@v.Total.ToString("0.00")</td></tr>
+        <tr><td>Efectivo</td><td class="derecha">@v.MontoEfectivo.ToString("0.00")</td></tr>
+        <tr><td>Tarjeta</td><td class="derecha">@v.MontoTarjeta.ToString("0.00")</td></tr>
+    </table>
+    <div class="acciones"><button onclick="window.print()">Imprimir</button></div>
+}

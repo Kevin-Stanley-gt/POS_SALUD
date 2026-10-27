@@ -1,0 +1,42 @@
+@page
+@model POS_SALUD.Pages.Inventario.IndexModel
+@{
+    ViewData["Title"] = "Inventario";
+}
+<div class="page-header">
+    <h1>Inventario por lotes</h1>
+</div>
+<div class="card">
+<div class="table-responsive">
+<table class="table table-sm table-hover mb-0">
+    <thead>
+        <tr>
+            <th class="ps-3">Artículo</th>
+            <th>Lote</th>
+            <th>Vencimiento</th>
+            <th class="text-end">Costo</th>
+            <th class="text-end pe-3">Existencia</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var l in Model.Lotes)
+        {
+            var vencido = l.FechaVencimiento < DateOnly.FromDateTime(DateTime.Today);
+            <tr class="@(vencido ? "table-danger" : "")">
+                <td class="ps-3">@l.ArticuloSucursal?.Articulo?.Nombre</td>
+                <td>@l.Lote</td>
+                <td>
+                    @l.FechaVencimiento.ToString("dd/MM/yyyy")
+                    @if (vencido)
+                    {
+                        <span class="badge bg-danger ms-1">Vencido</span>
+                    }
+                </td>
+                <td class="text-end">@l.CostoUnitario.ToString("N2")</td>
+                <td class="text-end pe-3">@l.Existencia</td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>
+</div>

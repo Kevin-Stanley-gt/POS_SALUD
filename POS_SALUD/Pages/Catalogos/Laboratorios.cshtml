@@ -1,0 +1,83 @@
+@page
+@model POS_SALUD.Pages.Catalogos.LaboratoriosModel
+@{
+    ViewData["Title"] = "Laboratorios";
+}
+<div class="page-header">
+    <h1>Laboratorios</h1>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNuevo">Nuevo laboratorio</button>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">Nombre</th>
+                    <th>Estado</th>
+                    <th class="pe-3 text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var l in Model.Items)
+                {
+                    <tr>
+                        <td class="ps-3">@l.Nombre</td>
+                        <td><span class="badge @(l.Activo ? "bg-success" : "bg-secondary")">@(l.Activo ? "Activo" : "Inactivo")</span></td>
+                        <td class="pe-3 text-end">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalToggle@(l.IdLaboratorio)">@(l.Activo ? "Desactivar" : "Activar")</button>
+                            <div class="modal fade" id="modalToggle@(l.IdLaboratorio)" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">@(l.Activo ? "Desactivar" : "Activar") laboratorio</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                        </div>
+                                        <div class="modal-body text-start">¿Confirma cambiar el estado de <strong>@l.Nombre</strong>?</div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form method="post" asp-page-handler="Toggle" asp-route-id="@l.IdLaboratorio" class="d-inline">
+                                                <button type="submit" class="btn btn-primary">Confirmar</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevo" tabindex="-1" aria-labelledby="modalNuevoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNuevoLabel">Nuevo laboratorio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <label asp-for="Input.Nombre" class="form-label"></label>
+                    <input asp-for="Input.Nombre" class="form-control" placeholder="Nombre del laboratorio" />
+                    <span asp-validation-for="Input.Nombre" class="text-danger small"></span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (ModelState.ErrorCount > 0)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            new bootstrap.Modal(document.getElementById("modalNuevo")).show();
+        });
+    </script>
+}

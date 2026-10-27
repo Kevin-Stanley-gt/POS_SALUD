@@ -1,0 +1,105 @@
+@page
+@model POS_SALUD.Pages.Catalogos.ClientesModel
+@{
+    ViewData["Title"] = "Clientes";
+}
+<div class="page-header">
+    <h1>Clientes</h1>
+    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNuevo">Nuevo cliente</button>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-3">NIT</th>
+                    <th>Nombre</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Estado</th>
+                    <th class="pe-3 text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    <tr>
+                        <td class="ps-3">@c.Nit</td>
+                        <td>@c.Nombre</td>
+                        <td>@c.Direccion</td>
+                        <td>@c.Telefono</td>
+                        <td><span class="badge @(c.Activo ? "bg-success" : "bg-secondary")">@(c.Activo ? "Activo" : "Inactivo")</span></td>
+                        <td class="pe-3 text-end">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalToggle@(c.IdCliente)">@(c.Activo ? "Desactivar" : "Activar")</button>
+                            <div class="modal fade" id="modalToggle@(c.IdCliente)" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">@(c.Activo ? "Desactivar" : "Activar") cliente</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                        </div>
+                                        <div class="modal-body text-start">¿Confirma cambiar el estado de <strong>@c.Nombre</strong>?</div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form method="post" asp-page-handler="Toggle" asp-route-id="@c.IdCliente" class="d-inline">
+                                                <button type="submit" class="btn btn-primary">Confirmar</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevo" tabindex="-1" aria-labelledby="modalNuevoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNuevoLabel">Nuevo cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="Input.Nit" class="form-label"></label>
+                            <input asp-for="Input.Nit" class="form-control" placeholder="NIT" />
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="Input.Nombre" class="form-label"></label>
+                            <input asp-for="Input.Nombre" class="form-control" placeholder="Nombre" />
+                            <span asp-validation-for="Input.Nombre" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-8">
+                            <label asp-for="Input.Direccion" class="form-label"></label>
+                            <input asp-for="Input.Direccion" class="form-control" placeholder="Dirección" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Input.Telefono" class="form-label"></label>
+                            <input asp-for="Input.Telefono" class="form-control" placeholder="Teléfono" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (ModelState.ErrorCount > 0)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            new bootstrap.Modal(document.getElementById("modalNuevo")).show();
+        });
+    </script>
+}

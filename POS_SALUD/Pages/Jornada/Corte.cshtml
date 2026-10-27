@@ -1,0 +1,31 @@
+@page "{id:int}"
+@model POS_SALUD.Pages.Jornada.CorteModel
+@{
+    Layout = "_Print";
+}
+@if (Model.Jornada is not null)
+{
+    var j = Model.Jornada;
+    <h1>@Model.NombreSucursal</h1>
+    <div class="centro">Corte de caja</div>
+    <hr />
+    <div>Jornada: @j.IdJornada</div>
+    <div>Apertura: @j.FechaApertura.ToString("dd/MM/yyyy HH:mm")</div>
+    <div>Cierre: @(j.FechaCierre?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
+    <hr />
+    <table>
+        <tr><td>Fondo inicial</td><td class="derecha">@j.FondoInicial.ToString("0.00")</td></tr>
+        <tr><td>Ventas (@Model.NumeroVentas)</td><td class="derecha">@Model.TotalVentas.ToString("0.00")</td></tr>
+        <tr><td>Devoluciones (@Model.NumeroDevoluciones)</td><td class="derecha">@Model.TotalDevoluciones.ToString("0.00")</td></tr>
+    </table>
+    <hr />
+    <table>
+        <tr><td>Efectivo esperado</td><td class="derecha">@((j.EfectivoEsperado ?? 0).ToString("0.00"))</td></tr>
+        <tr><td>Efectivo declarado</td><td class="derecha">@((j.EfectivoDeclarado ?? 0).ToString("0.00"))</td></tr>
+        <tr><td>Diferencia efectivo</td><td class="derecha">@((j.DiferenciaEfectivo ?? 0).ToString("0.00"))</td></tr>
+        <tr><td>Tarjeta esperada</td><td class="derecha">@((j.TarjetaEsperada ?? 0).ToString("0.00"))</td></tr>
+        <tr><td>Tarjeta declarada</td><td class="derecha">@((j.TarjetaDeclarada ?? 0).ToString("0.00"))</td></tr>
+        <tr><td>Diferencia tarjeta</td><td class="derecha">@((j.DiferenciaTarjeta ?? 0).ToString("0.00"))</td></tr>
+    </table>
+    <div class="acciones"><button onclick="window.print()">Imprimir</button></div>
+}
