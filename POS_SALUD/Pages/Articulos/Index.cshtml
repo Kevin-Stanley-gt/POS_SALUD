@@ -4,41 +4,110 @@
 @{
     ViewData["Title"] = "Artículos";
 }
-<div class="page-header">
-    <h1>Artículos</h1>
-    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoArticulo">Nuevo artículo</button>
+
+<style>
+    .brand-btn-primary {
+        background-color: #0b5e5c;
+        border-color: #0b5e5c;
+        color: #ffffff;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+        .brand-btn-primary:hover {
+            background-color: #084342;
+            border-color: #084342;
+            color: #ffffff;
+        }
+
+    .table-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-custom thead th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-custom tbody td {
+        padding: 0.85rem 1rem;
+        vertical-align: middle;
+        font-size: 0.88rem;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+    }
+</style>
+
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Catálogo de Artículos</h2>
+        <p class="text-secondary small mb-0">Administra los medicamentos y productos registrados en el sistema.</p>
+    </div>
+    <button type="button" class="btn brand-btn-primary d-inline-flex align-items-center gap-2 py-2 px-3" data-bs-toggle="modal" data-bs-target="#modalNuevoArticulo">
+        <i class="bi bi-plus-lg"></i>
+        <span>Nuevo artículo</span>
+    </button>
 </div>
 
-<div class="card">
+<div class="table-card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-sm table-hover mb-0">
+        <table class="table table-hover table-custom mb-0">
             <thead>
                 <tr>
-                    <th class="ps-3">Código</th>
+                    <th class="ps-4">Código</th>
                     <th>Nombre</th>
                     <th>Genérico</th>
                     <th>Laboratorio</th>
-                    <th class="text-end">Precio</th>
-                    <th class="pe-3">Receta</th>
+                    <th class="text-end">Precio Base</th>
+                    <th class="pe-4 text-center">Receta</th>
                 </tr>
             </thead>
             <tbody>
+                @if (!Model.Articulos.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                            No hay artículos registrados en el catálogo.
+                        </td>
+                    </tr>
+                }
                 @foreach (var a in Model.Articulos)
                 {
                     <tr>
-                        <td class="ps-3">@a.CodigoBarras</td>
-                        <td>@a.Nombre</td>
-                        <td>@a.Generico?.Nombre</td>
-                        <td>@a.Laboratorio?.Nombre</td>
-                        <td class="text-end">@a.PrecioBase.ToString("N2")</td>
-                        <td class="pe-3">
-                            @if (a.RequiereReceta)
+                        <td class="ps-4 font-monospace fw-semibold text-secondary">@a.CodigoBarras</td>
+                        <td class="fw-semibold text-dark">@a.Nombre</td>
+                        <td>
+                            @if (a.Generico != null)
                             {
-                                <span class="badge bg-warning text-dark">Sí</span>
+                                <span class="badge bg-light text-dark border">@a.Generico.Nombre</span>
                             }
                             else
                             {
-                                <span class="badge bg-secondary">No</span>
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td>@(a.Laboratorio?.Nombre ?? "—")</td>
+                        <td class="text-end fw-bold text-dark">Q @a.PrecioBase.ToString("N2")</td>
+                        <td class="pe-4 text-center">
+                            @if (a.RequiereReceta)
+                            {
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+                                    <i class="bi bi-file-earmark-medical me-1"></i> Requiere
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-muted border px-2 py-1">Libre</span>
                             }
                         </td>
                     </tr>
@@ -48,49 +117,62 @@
     </div>
 </div>
 
+<!-- Modal Nuevo Artículo -->
 <div class="modal fade" id="modalNuevoArticulo" tabindex="-1" aria-labelledby="modalNuevoArticuloLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow" style="border-radius: 14px;">
             <form method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalNuevoArticuloLabel">Nuevo artículo</h5>
+                <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark" id="modalNuevoArticuloLabel">Nuevo artículo</h5>
+                        <p class="text-muted small mb-0">Completa la ficha técnica para registrar el medicamento o insumo.</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="modal-body p-4">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label asp-for="Input.CodigoBarras" class="form-label"></label>
-                            <input asp-for="Input.CodigoBarras" class="form-control" />
+                            <label asp-for="Input.CodigoBarras" class="form-label small fw-semibold text-secondary">Código de barras</label>
+                            <input asp-for="Input.CodigoBarras" class="form-control" placeholder="Ej. 740100123456" />
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Input.Nombre" class="form-label"></label>
-                            <input asp-for="Input.Nombre" class="form-control" />
+                            <label asp-for="Input.Nombre" class="form-label small fw-semibold text-secondary">Nombre comercial</label>
+                            <input asp-for="Input.Nombre" class="form-control" placeholder="Ej. Amoxicilina 500mg" />
                             <span asp-validation-for="Input.Nombre" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Input.IdGenerico" class="form-label">Genérico</label>
-                            <select asp-for="Input.IdGenerico" class="form-select" asp-items="@(new SelectList(Model.Genericos, nameof(POS_SALUD.Data.Entities.Generico.IdGenerico), nameof(POS_SALUD.Data.Entities.Generico.Nombre)))"></select>
+                            <label asp-for="Input.IdGenerico" class="form-label small fw-semibold text-secondary">Genérico</label>
+                            <select asp-for="Input.IdGenerico" class="form-select" asp-items="@(new SelectList(Model.Genericos, nameof(POS_SALUD.Data.Entities.Generico.IdGenerico), nameof(POS_SALUD.Data.Entities.Generico.Nombre)))">
+                                <option value="">-- Seleccionar Genérico --</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Input.IdLaboratorio" class="form-label">Laboratorio</label>
-                            <select asp-for="Input.IdLaboratorio" class="form-select" asp-items="@(new SelectList(Model.Laboratorios, nameof(POS_SALUD.Data.Entities.Laboratorio.IdLaboratorio), nameof(POS_SALUD.Data.Entities.Laboratorio.Nombre)))"></select>
+                            <label asp-for="Input.IdLaboratorio" class="form-label small fw-semibold text-secondary">Laboratorio</label>
+                            <select asp-for="Input.IdLaboratorio" class="form-select" asp-items="@(new SelectList(Model.Laboratorios, nameof(POS_SALUD.Data.Entities.Laboratorio.IdLaboratorio), nameof(POS_SALUD.Data.Entities.Laboratorio.Nombre)))">
+                                <option value="">-- Seleccionar Laboratorio --</option>
+                            </select>
                         </div>
                         <div class="col-md-6">
-                            <label asp-for="Input.PrecioBase" class="form-label"></label>
-                            <input asp-for="Input.PrecioBase" class="form-control" />
+                            <label asp-for="Input.PrecioBase" class="form-label small fw-semibold text-secondary">Precio base</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">Q</span>
+                                <input asp-for="Input.PrecioBase" class="form-control" placeholder="0.00" />
+                            </div>
                         </div>
-                        <div class="col-md-6 d-flex align-items-end">
-                            <div class="form-check mb-2">
-                                <input asp-for="Input.RequiereReceta" class="form-check-input" />
-                                <label asp-for="Input.RequiereReceta" class="form-check-label"></label>
+                        <div class="col-md-6 d-flex align-items-center pt-md-4">
+                            <div class="form-check form-switch mt-2">
+                                <input asp-for="Input.RequiereReceta" class="form-check-input" type="checkbox" role="switch" id="switchReceta" />
+                                <label class="form-check-label small fw-semibold text-secondary ms-2" for="switchReceta">
+                                    ¿Requiere prescripción / receta médica?
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                <div class="modal-footer border-top-0 px-4 pb-4">
+                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn brand-btn-primary px-4">Guardar artículo</button>
                 </div>
             </form>
         </div>

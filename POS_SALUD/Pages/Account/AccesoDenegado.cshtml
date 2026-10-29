@@ -3,6 +3,23 @@
 @{
     ViewData["Title"] = "Acceso denegado";
 }
-<h3>Acceso denegado</h3>
-<p>No tiene permisos para acceder a esta sección.</p>
-<a asp-page="/Index" class="btn btn-secondary">Volver al inicio</a>
+
+<div class="container d-flex align-items-center justify-content-center py-5" style="min-height: 75vh;">
+    <div class="card border-0 shadow-sm p-4 p-md-5 text-center" style="max-width: 480px; border-radius: 16px;">
+        <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+             style="width: 72px; height: 72px; background-color: #feefef; color: #dc3545;">
+            <i class="bi bi-shield-slash fs-1"></i>
+        </div>
+
+        <h3 class="fw-bold text-dark mb-2">Acceso denegado</h3>
+        <p class="text-secondary mb-4">
+            No tienes los permisos necesarios para ingresar a este módulo o sección del sistema.
+        </p>
+
+        <div class="d-grid gap-2">
+            <a asp-page="/Index" class="btn btn-primary py-2 fw-medium" style="background-color: #0b5e5c; border-color: #0b5e5c;">
+                <i class="bi bi-house-door me-1"></i> Volver al inicio
+            </a>
+        </div>
+    </div>
+</div>

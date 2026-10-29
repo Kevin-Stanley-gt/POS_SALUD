@@ -2,140 +2,274 @@
 @using Microsoft.AspNetCore.Mvc.Rendering
 @model POS_SALUD.Pages.Compras.NuevaModel
 @{
-    ViewData["Title"] = "Nueva compra";
+    ViewData["Title"] = "Registrar compra";
 }
-<div class="page-header">
-    <h1>Registrar compra</h1>
+
+<style>
+    :root {
+        --brand-color: #0b5e5c;
+        --brand-hover: #084342;
+    }
+
+    .compra-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1.5rem 1.75rem;
+    }
+
+    .table-compras thead th {
+        background-color: #ffffff;
+        color: #475569;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-compras tbody td {
+        padding: 0.6rem 0.5rem;
+        vertical-align: middle;
+        border-bottom: none;
+    }
+
+    .table-compras .form-control,
+    .table-compras .form-select {
+        font-size: 0.88rem;
+        border-radius: 8px;
+        border-color: #cbd5e1;
+    }
+
+        .table-compras .form-control:focus,
+        .table-compras .form-select:focus {
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 0.2rem rgba(11, 94, 92, 0.12);
+        }
+
+    .btn-trash-line {
+        color: #94a3b8;
+        border: none;
+        background: transparent;
+        padding: 6px;
+        border-radius: 6px;
+        transition: all 0.15s ease-in-out;
+    }
+
+        .btn-trash-line:hover {
+            color: #dc3545;
+            background-color: #fee2e2;
+        }
+
+    .btn-brand-primary {
+        background-color: var(--brand-color);
+        border-color: var(--brand-color);
+        color: #ffffff;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+        .btn-brand-primary:hover {
+            background-color: var(--brand-hover);
+            border-color: var(--brand-hover);
+            color: #ffffff;
+        }
+
+    .total-estimado-val {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+</style>
+
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1">Registrar compra</h2>
+    <p class="text-secondary small mb-0">Organiza el documento e ingresa los artículos recibidos por lote.</p>
 </div>
 
 @if (Model.MensajeError is not null)
 {
-    <div class="alert alert-danger">@Model.MensajeError</div>
+    <div class="alert alert-danger py-2 small d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="bi bi-x-circle-fill"></i>
+        <div>@Model.MensajeError</div>
+    </div>
 }
+
 @if (Model.CompraRegistrada is not null)
 {
-    <div class="alert alert-success alert-dismissible fade show">
-        Compra @Model.CompraRegistrada.NumeroDocumento registrada. Total: @Model.CompraRegistrada.Total.ToString("N2")
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    <div class="alert alert-success alert-dismissible fade show py-2 small d-flex align-items-center justify-content-between mb-4" role="alert">
+        <div>
+            <i class="bi bi-check-circle-fill me-2"></i>
+            Compra <strong>@Model.CompraRegistrada.NumeroDocumento</strong> registrada exitosamente. Total: <strong>Q @Model.CompraRegistrada.Total.ToString("N2")</strong>
+        </div>
+        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Cerrar"></button>
     </div>
 }
 
 <form method="post" id="formCompra">
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label asp-for="Input.IdTipoDocumento" class="form-label"></label>
-                    <select asp-for="Input.IdTipoDocumento" class="form-select" asp-items="@(new SelectList(Model.TiposDocumento, nameof(POS_SALUD.Data.Entities.TipoDocumento.IdTipoDocumento), nameof(POS_SALUD.Data.Entities.TipoDocumento.Nombre)))"></select>
-                </div>
-                <div class="col-md-3">
-                    <label asp-for="Input.IdProveedor" class="form-label"></label>
-                    <select asp-for="Input.IdProveedor" class="form-select" asp-items="@(new SelectList(Model.Proveedores, nameof(POS_SALUD.Data.Entities.Proveedor.IdProveedor), nameof(POS_SALUD.Data.Entities.Proveedor.RazonSocial)))"></select>
-                </div>
-                <div class="col-md-3">
-                    <label asp-for="Input.NumeroDocumento" class="form-label"></label>
-                    <input asp-for="Input.NumeroDocumento" class="form-control" />
-                </div>
-                <div class="col-md-3">
-                    <label asp-for="Input.Observaciones" class="form-label"></label>
-                    <input asp-for="Input.Observaciones" class="form-control" />
-                </div>
+    <!-- Datos del Documento -->
+    <div class="compra-card shadow-sm mb-4">
+        <h5 class="fw-bold text-dark mb-3">Datos del documento</h5>
+        <div class="row g-3">
+            <div class="col-12 col-md-3">
+                <label asp-for="Input.IdTipoDocumento" class="form-label small fw-semibold text-secondary mb-1">Tipo de documento</label>
+                <select asp-for="Input.IdTipoDocumento" class="form-select" asp-items="@(new SelectList(Model.TiposDocumento, nameof(POS_SALUD.Data.Entities.TipoDocumento.IdTipoDocumento), nameof(POS_SALUD.Data.Entities.TipoDocumento.Nombre)))"></select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label asp-for="Input.IdProveedor" class="form-label small fw-semibold text-secondary mb-1">Proveedor</label>
+                <select asp-for="Input.IdProveedor" class="form-select" asp-items="@(new SelectList(Model.Proveedores, nameof(POS_SALUD.Data.Entities.Proveedor.IdProveedor), nameof(POS_SALUD.Data.Entities.Proveedor.RazonSocial)))"></select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label asp-for="Input.NumeroDocumento" class="form-label small fw-semibold text-secondary mb-1">Número de documento</label>
+                <input asp-for="Input.NumeroDocumento" class="form-control" placeholder="Ingresa el número" />
+            </div>
+            <div class="col-12 col-md-3">
+                <label asp-for="Input.Observaciones" class="form-label small fw-semibold text-secondary mb-1">Observaciones</label>
+                <input asp-for="Input.Observaciones" class="form-control" placeholder="Nota opcional sobre la compra" />
             </div>
         </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Detalle de la compra</span>
-            <button type="button" class="btn btn-sm btn-outline-primary" id="btnAgregarLinea">+ Agregar artículo</button>
-        </div>
+    <!-- Detalle de la Compra -->
+    <div class="compra-card shadow-sm mb-4">
+        <h5 class="fw-bold text-dark mb-1">Detalle de la compra</h5>
+        <p class="text-secondary small mb-3">Completa el lote, vencimiento, costo unitario y cantidad de cada artículo.</p>
+
         <div class="table-responsive">
-            <table class="table table-sm mb-0">
+            <table class="table table-compras mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-3">Artículo</th>
-                        <th>Lote</th>
-                        <th>Vencimiento</th>
-                        <th style="width:120px">Costo</th>
-                        <th style="width:120px">Cantidad</th>
-                        <th class="text-end" style="width:120px">Subtotal</th>
-                        <th style="width:60px"></th>
+                        <th style="min-width: 280px;">Artículo</th>
+                        <th style="width: 170px;">Lote</th>
+                        <th style="width: 160px;">Vencimiento</th>
+                        <th style="width: 130px;">Costo unitario</th>
+                        <th style="width: 100px;">Cantidad</th>
+                        <th style="width: 45px;"></th>
                     </tr>
                 </thead>
                 <tbody id="lineasCompra">
-                    @for (var i = 0; i < Model.Input.Lineas.Count; i++)
+                    @if (Model.Input.Lineas.Count > 0)
                     {
-                        <tr class="line-row">
-                            <td class="ps-3">
-                                <select name="Input.Lineas[@i].IdArticulo" class="form-select">
-                                    <option value="">-- Seleccione --</option>
-                                    @foreach (var a in Model.Articulos)
-                                    {
-                                        <option value="@a.IdArticulo">@a.Nombre</option>
-                                    }
-                                </select>
-                            </td>
-                            <td><input name="Input.Lineas[@i].Lote" class="form-control" /></td>
-                            <td><input name="Input.Lineas[@i].FechaVencimiento" type="date" class="form-control" /></td>
-                            <td><input name="Input.Lineas[@i].CostoUnitario" type="number" step="0.01" min="0" class="form-control linea-costo" /></td>
-                            <td><input name="Input.Lineas[@i].Cantidad" type="number" min="1" value="1" class="form-control linea-cantidad" /></td>
-                            <td class="text-end align-middle linea-subtotal">0.00</td>
-                            <td class="align-middle text-center">
-                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-line" title="Quitar">&times;</button>
-                            </td>
-                        </tr>
+                        for (var i = 0; i < Model.Input.Lineas.Count; i++)
+                        {
+                            <tr class="line-row">
+                                <td>
+                                    <select name="Input.Lineas[@i].IdArticulo" class="form-select">
+                                        <option value="">Seleccionar artículo</option>
+                                        @foreach (var a in Model.Articulos)
+                                        {
+                                            <option value="@a.IdArticulo">@a.Nombre</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td><input name="Input.Lineas[@i].Lote" class="form-control" placeholder="Número de lote" /></td>
+                                <td><input name="Input.Lineas[@i].FechaVencimiento" type="date" class="form-control" /></td>
+                                <td><input name="Input.Lineas[@i].CostoUnitario" type="number" step="0.01" min="0" class="form-control linea-costo" placeholder="0.00" /></td>
+                                <td><input name="Input.Lineas[@i].Cantidad" type="number" min="1" value="1" class="form-control linea-cantidad" /></td>
+                                <td class="text-center">
+                                    <button type="button" class="btn-trash-line btn-remove-line" title="Eliminar fila">
+                                        <i class="bi bi-trash fs-5 pointer-events-none"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <!-- Filas iniciales por defecto como en el mock -->
+                        @for (var i = 0; i < 3; i++)
+                        {
+                            <tr class="line-row">
+                                <td>
+                                    <select name="Input.Lineas[@i].IdArticulo" class="form-select">
+                                        <option value="">Seleccionar artículo</option>
+                                        @foreach (var a in Model.Articulos)
+                                        {
+                                            <option value="@a.IdArticulo">@a.Nombre</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td><input name="Input.Lineas[@i].Lote" class="form-control" placeholder="Número de lote" /></td>
+                                <td><input name="Input.Lineas[@i].FechaVencimiento" type="date" class="form-control" /></td>
+                                <td><input name="Input.Lineas[@i].CostoUnitario" type="number" step="0.01" min="0" class="form-control linea-costo" placeholder="0.00" /></td>
+                                <td><input name="Input.Lineas[@i].Cantidad" type="number" min="1" value="1" class="form-control linea-cantidad" /></td>
+                                <td class="text-center">
+                                    <button type="button" class="btn-trash-line btn-remove-line" title="Eliminar fila">
+                                        <i class="bi bi-trash fs-5 pointer-events-none"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     }
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="5" class="text-end">Total estimado</th>
-                        <th class="text-end" id="totalCompra">0.00</th>
-                        <th></th>
-                    </tr>
-                </tfoot>
             </table>
+        </div>
+
+        <!-- Botón agregar y leyenda -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pt-3 mt-2 border-top">
+            <button type="button" class="btn btn-outline-secondary btn-sm px-3 py-2 rounded-3 d-inline-flex align-items-center gap-2 fw-medium" id="btnAgregarLinea">
+                <i class="bi bi-plus-lg"></i>
+                <span>Agregar fila</span>
+            </button>
+            <span class="text-muted small">Solo se guardarán las filas con un artículo seleccionado.</span>
+        </div>
+
+        <!-- Total estimado -->
+        <div class="d-flex justify-content-between align-items-center pt-4 mt-3 border-top">
+            <span class="fw-semibold text-dark fs-5">Total estimado</span>
+            <div class="total-estimado-val">Q <span id="totalCompra">0.00</span></div>
         </div>
     </div>
 
+    <!-- Barra de acciones inferior -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-5">
+        <span class="text-muted small">Revisa el documento y el detalle antes de registrar la compra.</span>
+        <div class="d-flex align-items-center gap-2">
+            <a asp-page="/Index" class="btn btn-light bg-white border px-4 py-2 text-dark fw-medium rounded-3">Cancelar</a>
+            <button type="button" class="btn btn-brand-primary px-4 py-2 d-inline-flex align-items-center gap-2 rounded-3" data-bs-toggle="modal" data-bs-target="#modalConfirmarCompra">
+                <i class="bi bi-check-lg"></i>
+                <span>Registrar compra</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Plantilla oculta para añadir filas con JS -->
     <template id="plantillaLineaCompra">
         <tr class="line-row">
-            <td class="ps-3">
+            <td>
                 <select class="form-select" data-name="Input.Lineas[__i__].IdArticulo">
-                    <option value="">-- Seleccione --</option>
+                    <option value="">Seleccionar artículo</option>
                     @foreach (var a in Model.Articulos)
                     {
                         <option value="@a.IdArticulo">@a.Nombre</option>
                     }
                 </select>
             </td>
-            <td><input class="form-control" data-name="Input.Lineas[__i__].Lote" /></td>
+            <td><input class="form-control" data-name="Input.Lineas[__i__].Lote" placeholder="Número de lote" /></td>
             <td><input type="date" class="form-control" data-name="Input.Lineas[__i__].FechaVencimiento" /></td>
-            <td><input type="number" step="0.01" min="0" class="form-control linea-costo" data-name="Input.Lineas[__i__].CostoUnitario" /></td>
+            <td><input type="number" step="0.01" min="0" class="form-control linea-costo" data-name="Input.Lineas[__i__].CostoUnitario" placeholder="0.00" /></td>
             <td><input type="number" min="1" value="1" class="form-control linea-cantidad" data-name="Input.Lineas[__i__].Cantidad" /></td>
-            <td class="text-end align-middle linea-subtotal">0.00</td>
-            <td class="align-middle text-center">
-                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-line" title="Quitar">&times;</button>
+            <td class="text-center">
+                <button type="button" class="btn-trash-line btn-remove-line" title="Eliminar fila">
+                    <i class="bi bi-trash fs-5 pointer-events-none"></i>
+                </button>
             </td>
         </tr>
     </template>
 
-    <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalConfirmarCompra">Registrar compra</button>
-    </div>
-
+    <!-- Modal Confirmación -->
     <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-labelledby="modalConfirmarCompraLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalConfirmarCompraLabel">Confirmar compra</h5>
+            <div class="modal-content border-0 shadow" style="border-radius: 14px;">
+                <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                    <h5 class="modal-title fw-bold text-dark" id="modalConfirmarCompraLabel">Confirmar compra</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
-                    ¿Desea registrar esta compra? Los lotes se sumarán al inventario de la sucursal.
+                <div class="modal-body p-4">
+                    <p class="text-secondary mb-0">¿Desea registrar esta compra? Los lotes ingresados se sumarán al inventario activo de la sucursal.</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Sí, registrar</button>
+                <div class="modal-footer border-top-0 px-4 pb-4">
+                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-brand-primary px-4">Sí, registrar</button>
                 </div>
             </div>
         </div>
@@ -163,11 +297,9 @@
                 tbody.querySelectorAll('tr.line-row').forEach(function (fila) {
                     var costo = parseFloat(fila.querySelector('.linea-costo').value) || 0;
                     var cant = parseFloat(fila.querySelector('.linea-cantidad').value) || 0;
-                    var sub = costo * cant;
-                    fila.querySelector('.linea-subtotal').textContent = sub.toFixed(2);
-                    total += sub;
+                    total += (costo * cant);
                 });
-                totalEl.textContent = total.toFixed(2);
+                totalEl.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
 
             btnAgregar.addEventListener('click', function () {
@@ -182,12 +314,12 @@
             });
 
             tbody.addEventListener('click', function (e) {
-                if (!e.target.classList.contains('btn-remove-line')) {
-                    return;
-                }
+                var btn = e.target.closest('.btn-remove-line');
+                if (!btn) return;
+
                 var filas = tbody.querySelectorAll('tr.line-row');
                 if (filas.length > 1) {
-                    e.target.closest('tr').remove();
+                    btn.closest('tr').remove();
                 } else {
                     filas[0].querySelectorAll('input').forEach(function (el) {
                         el.value = el.classList.contains('linea-cantidad') ? 1 : '';

@@ -6,33 +6,159 @@
 @if (Model.Venta is not null)
 {
     var v = Model.Venta;
-    <h1>@(v.Sucursal?.Nombre ?? "POS Farma")</h1>
-    <div class="centro">Ticket de venta</div>
-    <hr />
-    <div>No.: @v.NumeroDocumento</div>
-    <div>Fecha: @v.FechaDocumento.ToString("dd/MM/yyyy HH:mm")</div>
-    <div>Cliente: @(v.Cliente?.Nombre ?? "Consumidor final")</div>
-    <hr />
-    <table>
-        <thead>
-            <tr><th>Artículo</th><th class="derecha">Cant</th><th class="derecha">Subtotal</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var d in v.Detalles)
-            {
-                <tr>
-                    <td>@d.Articulo?.Nombre</td>
-                    <td class="derecha">@d.Cantidad</td>
-                    <td class="derecha">@d.Subtotal.ToString("0.00")</td>
-                </tr>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: #000;
+            background-color: #f8fafc;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .ticket-wrapper {
+            max-width: 380px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .ticket-title {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .ticket-subtitle {
+            text-align: center;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .ticket-divider {
+            border-top: 1px dashed #444;
+            margin: 12px 0;
+        }
+
+        .ticket-info {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .ticket-table {
+            width: 100%;
+            font-size: 0.85rem;
+            border-collapse: collapse;
+        }
+
+            .ticket-table th {
+                border-bottom: 1px dashed #444;
+                padding-bottom: 4px;
+                font-weight: bold;
             }
-        </tbody>
-    </table>
-    <hr />
-    <table>
-        <tr><td class="total">TOTAL</td><td class="derecha total">@v.Total.ToString("0.00")</td></tr>
-        <tr><td>Efectivo</td><td class="derecha">@v.MontoEfectivo.ToString("0.00")</td></tr>
-        <tr><td>Tarjeta</td><td class="derecha">@v.MontoTarjeta.ToString("0.00")</td></tr>
-    </table>
-    <div class="acciones"><button onclick="window.print()">Imprimir</button></div>
+
+            .ticket-table td {
+                padding: 4px 0;
+            }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .total-row {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .btn-print {
+            background-color: #0b5e5c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            margin-top: 18px;
+        }
+
+            .btn-print:hover {
+                background-color: #084342;
+            }
+
+        @@media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+
+            .ticket-wrapper {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .btn-print {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <div class="ticket-wrapper">
+        <div class="ticket-title">@(v.Sucursal?.Nombre ?? "POS Farma")</div>
+        <div class="ticket-subtitle">Ticket de venta</div>
+
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-info"><strong>No. Documento:</strong> @v.NumeroDocumento</div>
+        <div class="ticket-info"><strong>Fecha:</strong> @v.FechaDocumento.ToString("dd/MM/yyyy HH:mm")</div>
+        <div class="ticket-info"><strong>Cliente:</strong> @(v.Cliente?.Nombre ?? "Consumidor final")</div>
+
+        <div class="ticket-divider"></div>
+
+        <table class="ticket-table">
+            <thead>
+                <tr>
+                    <th>Artículo</th>
+                    <th class="text-end" style="width: 50px;">Cant</th>
+                    <th class="text-end" style="width: 80px;">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in v.Detalles)
+                {
+                    <tr>
+                        <td>@d.Articulo?.Nombre</td>
+                        <td class="text-end">@d.Cantidad</td>
+                        <td class="text-end">Q @d.Subtotal.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="ticket-divider"></div>
+
+        <table class="ticket-table">
+            <tr class="total-row">
+                <td>TOTAL</td>
+                <td class="text-end">Q @v.Total.ToString("N2")</td>
+            </tr>
+            <tr>
+                <td>Efectivo</td>
+                <td class="text-end">Q @v.MontoEfectivo.ToString("N2")</td>
+            </tr>
+            <tr>
+                <td>Tarjeta</td>
+                <td class="text-end">Q @v.MontoTarjeta.ToString("N2")</td>
+            </tr>
+        </table>
+
+        <button type="button" class="btn-print" onclick="window.print()">
+            Imprimir Ticket
+        </button>
+    </div>
 }

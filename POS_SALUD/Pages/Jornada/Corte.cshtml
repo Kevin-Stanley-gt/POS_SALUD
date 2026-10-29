@@ -3,29 +3,160 @@
 @{
     Layout = "_Print";
 }
+
 @if (Model.Jornada is not null)
 {
     var j = Model.Jornada;
-    <h1>@Model.NombreSucursal</h1>
-    <div class="centro">Corte de caja</div>
-    <hr />
-    <div>Jornada: @j.IdJornada</div>
-    <div>Apertura: @j.FechaApertura.ToString("dd/MM/yyyy HH:mm")</div>
-    <div>Cierre: @(j.FechaCierre?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
-    <hr />
-    <table>
-        <tr><td>Fondo inicial</td><td class="derecha">@j.FondoInicial.ToString("0.00")</td></tr>
-        <tr><td>Ventas (@Model.NumeroVentas)</td><td class="derecha">@Model.TotalVentas.ToString("0.00")</td></tr>
-        <tr><td>Devoluciones (@Model.NumeroDevoluciones)</td><td class="derecha">@Model.TotalDevoluciones.ToString("0.00")</td></tr>
-    </table>
-    <hr />
-    <table>
-        <tr><td>Efectivo esperado</td><td class="derecha">@((j.EfectivoEsperado ?? 0).ToString("0.00"))</td></tr>
-        <tr><td>Efectivo declarado</td><td class="derecha">@((j.EfectivoDeclarado ?? 0).ToString("0.00"))</td></tr>
-        <tr><td>Diferencia efectivo</td><td class="derecha">@((j.DiferenciaEfectivo ?? 0).ToString("0.00"))</td></tr>
-        <tr><td>Tarjeta esperada</td><td class="derecha">@((j.TarjetaEsperada ?? 0).ToString("0.00"))</td></tr>
-        <tr><td>Tarjeta declarada</td><td class="derecha">@((j.TarjetaDeclarada ?? 0).ToString("0.00"))</td></tr>
-        <tr><td>Diferencia tarjeta</td><td class="derecha">@((j.DiferenciaTarjeta ?? 0).ToString("0.00"))</td></tr>
-    </table>
-    <div class="acciones"><button onclick="window.print()">Imprimir</button></div>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            color: #000;
+            background-color: #f8fafc;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .ticket-wrapper {
+            max-width: 380px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .ticket-title {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .ticket-subtitle {
+            text-align: center;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .ticket-divider {
+            border-top: 1px dashed #444;
+            margin: 12px 0;
+        }
+
+        .ticket-info {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .ticket-table {
+            width: 100%;
+            font-size: 0.85rem;
+            border-collapse: collapse;
+        }
+
+            .ticket-table td {
+                padding: 3px 0;
+            }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .btn-print {
+            background-color: #0b5e5c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            margin-top: 18px;
+        }
+
+            .btn-print:hover {
+                background-color: #084342;
+            }
+
+        @@media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+
+            .ticket-wrapper {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .btn-print {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <div class="ticket-wrapper">
+        <div class="ticket-title">@Model.NombreSucursal</div>
+        <div class="ticket-subtitle">Corte de caja</div>
+
+        <div class="ticket-divider"></div>
+
+        <div class="ticket-info"><strong>Jornada:</strong> #@j.IdJornada</div>
+        <div class="ticket-info"><strong>Apertura:</strong> @j.FechaApertura.ToString("dd/MM/yyyy HH:mm")</div>
+        <div class="ticket-info"><strong>Cierre:</strong> @(j.FechaCierre?.ToString("dd/MM/yyyy HH:mm") ?? "En curso")</div>
+
+        <div class="ticket-divider"></div>
+
+        <table class="ticket-table">
+            <tr>
+                <td>Fondo inicial</td>
+                <td class="text-end">Q @j.FondoInicial.ToString("N2")</td>
+            </tr>
+            <tr>
+                <td>Ventas (@Model.NumeroVentas)</td>
+                <td class="text-end">Q @Model.TotalVentas.ToString("N2")</td>
+            </tr>
+            <tr>
+                <td>Devoluciones (@Model.NumeroDevoluciones)</td>
+                <td class="text-end">Q @Model.TotalDevoluciones.ToString("N2")</td>
+            </tr>
+        </table>
+
+        <div class="ticket-divider"></div>
+
+        <table class="ticket-table">
+            <tr>
+                <td>Efectivo esperado</td>
+                <td class="text-end">Q @((j.EfectivoEsperado ?? 0).ToString("N2"))</td>
+            </tr>
+            <tr>
+                <td>Efectivo declarado</td>
+                <td class="text-end">Q @((j.EfectivoDeclarado ?? 0).ToString("N2"))</td>
+            </tr>
+            <tr>
+                <td><strong>Diferencia efectivo</strong></td>
+                <td class="text-end"><strong>Q @((j.DiferenciaEfectivo ?? 0).ToString("N2"))</strong></td>
+            </tr>
+            <tr><td colspan="2" style="height: 6px;"></td></tr>
+            <tr>
+                <td>Tarjeta esperada</td>
+                <td class="text-end">Q @((j.TarjetaEsperada ?? 0).ToString("N2"))</td>
+            </tr>
+            <tr>
+                <td>Tarjeta declarada</td>
+                <td class="text-end">Q @((j.TarjetaDeclarada ?? 0).ToString("N2"))</td>
+            </tr>
+            <tr>
+                <td><strong>Diferencia tarjeta</strong></td>
+                <td class="text-end"><strong>Q @((j.DiferenciaTarjeta ?? 0).ToString("N2"))</strong></td>
+            </tr>
+        </table>
+
+        <button type="button" class="btn-print" onclick="window.print()">
+            Imprimir Comprobante
+        </button>
+    </div>
 }

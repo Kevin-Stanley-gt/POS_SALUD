@@ -3,41 +3,110 @@
 @{
     ViewData["Title"] = "Laboratorios";
 }
-<div class="page-header">
-    <h1>Laboratorios</h1>
-    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalNuevo">Nuevo laboratorio</button>
+
+<style>
+    .brand-btn-primary {
+        background-color: #0b5e5c;
+        border-color: #0b5e5c;
+        color: #ffffff;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+        .brand-btn-primary:hover {
+            background-color: #084342;
+            border-color: #084342;
+            color: #ffffff;
+        }
+
+    .table-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-custom thead th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-custom tbody td {
+        padding: 0.85rem 1rem;
+        vertical-align: middle;
+        font-size: 0.88rem;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+    }
+</style>
+
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Laboratorios Farmacéuticos</h2>
+        <p class="text-secondary small mb-0">Marcas y casas productoras de insumos y medicamentos.</p>
+    </div>
+    <button type="button" class="btn brand-btn-primary d-inline-flex align-items-center gap-2 py-2 px-3" data-bs-toggle="modal" data-bs-target="#modalNuevo">
+        <i class="bi bi-building"></i>
+        <span>Nuevo laboratorio</span>
+    </button>
 </div>
 
-<div class="card">
+<div class="table-card shadow-sm">
     <div class="table-responsive">
-        <table class="table table-sm table-hover mb-0">
+        <table class="table table-hover table-custom mb-0">
             <thead>
                 <tr>
-                    <th class="ps-3">Nombre</th>
+                    <th class="ps-4">Nombre del Laboratorio</th>
                     <th>Estado</th>
-                    <th class="pe-3 text-end"></th>
+                    <th class="pe-4 text-end">Acciones</th>
                 </tr>
             </thead>
             <tbody>
+                @if (!Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="3" class="text-center py-5 text-muted">No hay laboratorios registrados.</td>
+                    </tr>
+                }
                 @foreach (var l in Model.Items)
                 {
                     <tr>
-                        <td class="ps-3">@l.Nombre</td>
-                        <td><span class="badge @(l.Activo ? "bg-success" : "bg-secondary")">@(l.Activo ? "Activo" : "Inactivo")</span></td>
-                        <td class="pe-3 text-end">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalToggle@(l.IdLaboratorio)">@(l.Activo ? "Desactivar" : "Activar")</button>
+                        <td class="ps-4 fw-semibold text-dark">@l.Nombre</td>
+                        <td>
+                            @if (l.Activo)
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">Inactivo</span>
+                            }
+                        </td>
+                        <td class="pe-4 text-end">
+                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalToggle@(l.IdLaboratorio)">
+                                @(l.Activo ? "Desactivar" : "Activar")
+                            </button>
+
                             <div class="modal fade" id="modalToggle@(l.IdLaboratorio)" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">@(l.Activo ? "Desactivar" : "Activar") laboratorio</h5>
+                                    <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+                                        <div class="modal-header border-bottom-0 pb-0">
+                                            <h5 class="modal-title fw-bold">@(l.Activo ? "Desactivar" : "Activar") laboratorio</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                         </div>
-                                        <div class="modal-body text-start">¿Confirma cambiar el estado de <strong>@l.Nombre</strong>?</div>
-                                        <div class="modal-footer">
+                                        <div class="modal-body text-start py-3">
+                                            ¿Confirma cambiar el estado de <strong>@l.Nombre</strong>?
+                                        </div>
+                                        <div class="modal-footer border-top-0">
                                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                                             <form method="post" asp-page-handler="Toggle" asp-route-id="@l.IdLaboratorio" class="d-inline">
-                                                <button type="submit" class="btn btn-primary">Confirmar</button>
+                                                <button type="submit" class="btn brand-btn-primary">Confirmar</button>
                                             </form>
                                         </div>
                                     </div>
@@ -53,20 +122,23 @@
 
 <div class="modal fade" id="modalNuevo" tabindex="-1" aria-labelledby="modalNuevoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content border-0 shadow" style="border-radius: 14px;">
             <form method="post">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalNuevoLabel">Nuevo laboratorio</h5>
+                <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark" id="modalNuevoLabel">Nuevo laboratorio</h5>
+                        <p class="text-muted small mb-0">Agrega un fabricante o laboratorio farmacéutico.</p>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
-                    <label asp-for="Input.Nombre" class="form-label"></label>
-                    <input asp-for="Input.Nombre" class="form-control" placeholder="Nombre del laboratorio" />
+                <div class="modal-body p-4">
+                    <label asp-for="Input.Nombre" class="form-label small fw-semibold text-secondary">Nombre de la empresa / laboratorio</label>
+                    <input asp-for="Input.Nombre" class="form-control" placeholder="Ej. Bayer, Pfizer, Novartis..." />
                     <span asp-validation-for="Input.Nombre" class="text-danger small"></span>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Agregar</button>
+                <div class="modal-footer border-top-0 px-4 pb-4">
+                    <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn brand-btn-primary px-4">Agregar laboratorio</button>
                 </div>
             </form>
         </div>

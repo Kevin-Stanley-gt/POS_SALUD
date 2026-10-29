@@ -1,2 +1,14 @@
 @page
 @model POS_SALUD.Pages.Account.LogoutModel
+@{
+    ViewData["Title"] = "Cerrando sesión...";
+}
+
+<div class="d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="text-center text-muted">
+        <div class="spinner-border text-primary mb-3" style="color: #0b5e5c !important;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="fw-medium">Cerrando sesión con seguridad...</p>
+    </div>
+</div>

@@ -1,261 +1,437 @@
 @page
 @model POS_SALUD.Pages.Ventas.NuevaModel
 @{
-    ViewData["Title"] = "Nueva venta";
+    ViewData["Title"] = "Punto de venta";
     var esDevolucion = Model.Input.TipoOperacion == NuevaModel.OperacionDevolucion;
     var totalVenta = Model.Input.Lineas.Sum(l => l.PrecioUnitario * l.Cantidad);
 }
-<div class="page-header">
-    <h1>Punto de venta</h1>
+
+<style>
+    :root {
+        --brand-color: #0b5e5c;
+        --brand-hover: #084342;
+    }
+
+    .pos-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .pos-total-card {
+        background-color: var(--brand-color);
+        color: #ffffff;
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .pos-action-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.25rem;
+    }
+
+    .table-pos thead th {
+        background-color: #f8fafc;
+        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-pos tbody td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        font-size: 0.88rem;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .btn-brand-primary {
+        background-color: var(--brand-color);
+        border-color: var(--brand-color);
+        color: #ffffff;
+        font-weight: 500;
+    }
+
+        .btn-brand-primary:hover {
+            background-color: var(--brand-hover);
+            border-color: var(--brand-hover);
+            color: #ffffff;
+        }
+</style>
+
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1">Punto de venta</h2>
+    <p class="text-secondary small mb-0">Encuentra los artículos y prepara la venta desde un solo lugar.</p>
 </div>
 
 @if (Model.JornadaActiva is null)
 {
-    <div class="alert alert-warning">No tiene una jornada abierta. <a asp-page="/Jornada/Index">Abrir jornada</a> antes de registrar ventas.</div>
+    <div class="alert alert-warning py-2 small d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>No tiene una jornada abierta. <a asp-page="/Jornada/Index" class="fw-bold text-dark">Abrir jornada</a> antes de registrar ventas.</div>
+    </div>
 }
 @if (Model.MensajeError is not null)
 {
-    <div class="alert alert-danger">@Model.MensajeError</div>
+    <div class="alert alert-danger py-2 small d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="bi bi-x-circle-fill"></i>
+        <div>@Model.MensajeError</div>
+    </div>
 }
 @if (Model.VentaRegistrada is not null)
 {
-    <div class="alert alert-success alert-dismissible fade show">
-        @(Model.VentaRegistrada.TipoVenta == NuevaModel.OperacionDevolucion ? "Devolución" : "Venta") @Model.VentaRegistrada.NumeroDocumento registrada. Total: @Model.VentaRegistrada.Total.ToString("N2")
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    <div class="alert alert-success alert-dismissible fade show py-2 small d-flex align-items-center justify-content-between mb-4" role="alert">
+        <div>
+            <i class="bi bi-check-circle-fill me-1"></i>
+            @(Model.VentaRegistrada.TipoVenta == NuevaModel.OperacionDevolucion ? "Devolución" : "Venta")
+            <strong>@Model.VentaRegistrada.NumeroDocumento</strong> registrada con éxito. Total: <strong>Q @Model.VentaRegistrada.Total.ToString("N2")</strong>
+            <a asp-page="/Ventas/Ticket" asp-route-id="@Model.VentaRegistrada.IdVenta" target="_blank" class="ms-3 fw-bold text-success text-decoration-underline">Imprimir ticket</a>
+        </div>
+        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Cerrar"></button>
     </div>
 }
 
 <form method="post" id="formVenta">
     <input type="hidden" asp-for="Input.IdCliente" />
     <input type="hidden" asp-for="Input.IdVentaOrigen" />
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Tipo de operación</label>
-                    <select asp-for="Input.TipoOperacion" class="form-select" onchange="document.getElementById('formVenta').requestSubmit(document.getElementById('btnCambiarTipo'))">
-                        <option value="@NuevaModel.OperacionVenta">Venta</option>
-                        <option value="@NuevaModel.OperacionDevolucion">Devolución</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Tipo de documento</label>
-                    <select asp-for="Input.IdTipoDocumento" class="form-select" asp-items="@(new SelectList(Model.TiposDocumento.Where(t => t.Codigo == (esDevolucion ? "DV" : "FV")), nameof(POS_SALUD.Data.Entities.TipoDocumento.IdTipoDocumento), nameof(POS_SALUD.Data.Entities.TipoDocumento.Nombre)))"></select>
-                </div>
+
+    <!-- Barra de configuración de tipo de operación -->
+    <div class="pos-card shadow-sm mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-secondary mb-1">Tipo de operación</label>
+                <select asp-for="Input.TipoOperacion" class="form-select form-select-sm" onchange="document.getElementById('formVenta').requestSubmit(document.getElementById('btnCambiarTipo'))">
+                    <option value="@NuevaModel.OperacionVenta">Venta</option>
+                    <option value="@NuevaModel.OperacionDevolucion">Devolución</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-secondary mb-1">Tipo de documento</label>
+                <select asp-for="Input.IdTipoDocumento" class="form-select form-select-sm" asp-items="@(new SelectList(Model.TiposDocumento.Where(t => t.Codigo == (esDevolucion ? "DV" : "FV")), nameof(POS_SALUD.Data.Entities.TipoDocumento.IdTipoDocumento), nameof(POS_SALUD.Data.Entities.TipoDocumento.Nombre)))"></select>
+            </div>
+            <div class="col-md-6 pt-md-4">
+                <span class="text-muted small">Define la operación antes de agregar artículos.</span>
             </div>
         </div>
     </div>
 
-    <div class="card mb-3">
-        <div class="card-header">1. Cliente</div>
-        <div class="card-body">
-            <div class="input-group mb-2">
-                <input asp-for="Input.BusquedaCliente" class="form-control" placeholder="Buscar cliente por nombre" />
-                <button type="submit" class="btn btn-outline-primary" asp-page-handler="BuscarCliente">Buscar</button>
-            </div>
-            @if (Model.ClientesEncontrados.Count > 0)
-            {
-                <div class="list-group mb-2">
-                    @foreach (var c in Model.ClientesEncontrados)
-                    {
-                        <button type="submit" class="list-group-item list-group-item-action" asp-page-handler="SeleccionarCliente" asp-route-idCliente="@c.IdCliente">@c.Nombre</button>
-                    }
+    <!-- Layout en 2 columnas: operativa y resumen -->
+    <div class="row g-4">
+        <!-- Columna Izquierda: Cliente, Búsqueda de Artículos y Tabla -->
+        <div class="col-12 col-lg-8">
+            <!-- Sección Cliente -->
+            <div class="pos-card shadow-sm mb-4">
+                <h5 class="fw-bold text-dark mb-3">Cliente</h5>
+                <div class="input-group mb-2">
+                    <span class="input-group-text bg-white border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input asp-for="Input.BusquedaCliente" class="form-control border-start-0 border-end-0 ps-0" placeholder="Buscar cliente por nombre..." />
+                    <button type="submit" class="btn btn-outline-secondary px-3" asp-page-handler="BuscarCliente">Buscar</button>
                 </div>
-            }
-            @if (Model.ClienteSeleccionado is not null)
-            {
-                <div class="alert alert-info mb-0">Cliente: <strong>@Model.ClienteSeleccionado.Nombre</strong></div>
-            }
-            else if (!esDevolucion)
-            {
-                <small class="text-muted">Sin cliente seleccionado: consumidor final.</small>
-            }
-        </div>
-    </div>
 
-    @if (esDevolucion && Model.ClienteSeleccionado is not null)
-    {
-        <div class="card mb-3">
-            <div class="card-header">2. Venta a devolver</div>
-            <div class="table-responsive">
-                <table class="table table-sm mb-0">
-                    <thead>
-                        <tr><th class="ps-3">Documento</th><th>Fecha</th><th class="text-end">Total</th><th></th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var v in Model.VentasCliente)
+                @if (Model.ClientesEncontrados.Count > 0)
+                {
+                    <div class="list-group mb-3 shadow-sm">
+                        @foreach (var c in Model.ClientesEncontrados)
                         {
-                            <tr class="@(v.IdVenta == Model.Input.IdVentaOrigen ? "table-primary" : "")">
-                                <td class="ps-3">@v.NumeroDocumento</td>
-                                <td>@v.FechaDocumento.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td class="text-end">@v.Total.ToString("N2")</td>
-                                <td class="text-end">
-                                    <button type="submit" class="btn btn-sm btn-outline-primary" asp-page-handler="SeleccionarVenta" asp-route-idVenta="@v.IdVenta">Seleccionar</button>
-                                </td>
-                            </tr>
+                            <button type="submit" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2" asp-page-handler="SeleccionarCliente" asp-route-idCliente="@c.IdCliente">
+                                <div>
+                                    <span class="fw-semibold text-dark">@c.Nombre</span>
+                                    <span class="text-muted small ms-2">NIT: @(string.IsNullOrWhiteSpace(c.Nit) ? "C/F" : c.Nit)</span>
+                                </div>
+                                <i class="bi bi-arrow-right-short text-muted fs-5"></i>
+                            </button>
                         }
-                        @if (Model.VentasCliente.Count == 0)
-                        {
-                            <tr><td colspan="4" class="ps-3 text-muted">Este cliente no tiene ventas registradas.</td></tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    }
-
-    @if (!esDevolucion || Model.VentaOrigenSeleccionada is not null)
-    {
-        <div class="card mb-3">
-            <div class="card-header">@(esDevolucion ? "3. Artículos a devolver" : "2. Artículos")</div>
-            @if (!esDevolucion)
-            {
-                <div class="card-body border-bottom">
-                    <div class="input-group">
-                        <input asp-for="Input.BusquedaArticulo" class="form-control" placeholder="Buscar artículo por nombre" />
-                        <button type="submit" class="btn btn-outline-primary" asp-page-handler="BuscarArticulo">Buscar</button>
                     </div>
-                    @if (Model.ArticulosEncontrados.Count > 0)
-                    {
-                        <div class="list-group mt-2">
-                            @foreach (var a in Model.ArticulosEncontrados)
-                            {
-                                <button type="submit" class="list-group-item list-group-item-action d-flex justify-content-between" asp-page-handler="AgregarArticulo" asp-route-idArticulo="@a.IdArticulo">
-                                    <span>@a.Nombre</span><span>@a.PrecioBase.ToString("N2")</span>
-                                </button>
-                            }
+                }
+
+                @if (Model.ClienteSeleccionado is not null)
+                {
+                    <div class="alert alert-success-subtle border border-success-subtle py-2 px-3 mb-0 small d-flex align-items-center justify-content-between">
+                        <div>
+                            <i class="bi bi-person-check-fill text-success me-2"></i>
+                            Cliente seleccionado: <strong>@Model.ClienteSeleccionado.Nombre</strong> (NIT: @(string.IsNullOrWhiteSpace(Model.ClienteSeleccionado.Nit) ? "C/F" : Model.ClienteSeleccionado.Nit))
                         </div>
-                    }
+                    </div>
+                }
+                else if (!esDevolucion)
+                {
+                    <div class="d-flex align-items-center text-muted small mt-2">
+                        <i class="bi bi-person me-2 fs-5"></i>
+                        <span>Sin cliente seleccionado: consumidor final.</span>
+                    </div>
+                }
+            </div>
+
+            <!-- Sección Venta a devolver (Si aplica) -->
+            @if (esDevolucion && Model.ClienteSeleccionado is not null)
+            {
+                <div class="pos-card shadow-sm mb-4">
+                    <h5 class="fw-bold text-dark mb-3">2. Venta a devolver</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-pos mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-3">Documento</th>
+                                    <th>Fecha</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end pe-3">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var v in Model.VentasCliente)
+                                {
+                                    <tr class="@(v.IdVenta == Model.Input.IdVentaOrigen ? "table-light border-primary" : "")">
+                                        <td class="ps-3 fw-semibold">@v.NumeroDocumento</td>
+                                        <td>@v.FechaDocumento.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td class="text-end fw-bold">Q @v.Total.ToString("N2")</td>
+                                        <td class="text-end pe-3">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3" asp-page-handler="SeleccionarVenta" asp-route-idVenta="@v.IdVenta">Seleccionar</button>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (Model.VentasCliente.Count == 0)
+                                {
+                                    <tr><td colspan="4" class="ps-3 py-3 text-muted">Este cliente no tiene ventas registradas.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             }
-            <div class="table-responsive">
-                <table class="table table-sm mb-0">
-                    <thead>
-                        <tr>
-                            <th class="ps-3">Artículo</th>
-                            <th class="text-end" style="width:120px">Cantidad</th>
-                            @if (esDevolucion)
-                            {
-                                <th class="text-end" style="width:160px">Disponible a devolver</th>
-                            }
-                            <th class="text-end" style="width:120px">Precio</th>
-                            <th class="text-end" style="width:120px">Subtotal</th>
-                            @if (!esDevolucion)
-                            {
-                                <th style="width:200px"></th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (var i = 0; i < Model.Input.Lineas.Count; i++)
+
+            <!-- Sección Artículos -->
+            @if (!esDevolucion || Model.VentaOrigenSeleccionada is not null)
+            {
+                <div class="pos-card shadow-sm mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold text-dark mb-0">Artículos</h5>
+                        <span class="text-muted small">@Model.Input.Lineas.Count artículos en lista</span>
+                    </div>
+
+                    @if (!esDevolucion)
+                    {
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-white border-end-0 text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input asp-for="Input.BusquedaArticulo" class="form-control border-start-0 border-end-0 ps-0" placeholder="Buscar artículo por nombre o código..." />
+                            <span class="input-group-text bg-white border-start-0 border-end-0 text-muted">
+                                <i class="bi bi-upc-scan"></i>
+                            </span>
+                            <button type="submit" class="btn btn-outline-secondary px-3" asp-page-handler="BuscarArticulo">Buscar</button>
+                        </div>
+
+                        @if (Model.ArticulosEncontrados.Count > 0)
                         {
-                            var linea = Model.Input.Lineas[i];
-                            <tr>
-                                <td class="ps-3">
-                                    @linea.NombreArticulo
-                                    <input type="hidden" name="Input.Lineas[@i].IdArticulo" value="@linea.IdArticulo" />
-                                    <input type="hidden" name="Input.Lineas[@i].IdDetalleVenta" value="@linea.IdDetalleVenta" />
-                                    <input type="hidden" name="Input.Lineas[@i].NombreArticulo" value="@linea.NombreArticulo" />
-                                    <input type="hidden" name="Input.Lineas[@i].PrecioUnitario" value="@linea.PrecioUnitario.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
-                                    <input type="hidden" name="Input.Lineas[@i].Cantidad" value="@linea.Cantidad" />
-                                </td>
-                                <td class="text-end">@linea.Cantidad</td>
-                                @if (esDevolucion)
+                            <div class="list-group mb-3 shadow-sm">
+                                @foreach (var a in Model.ArticulosEncontrados)
                                 {
-                                    <td class="text-end">@(linea.IdDetalleVenta is int idDet ? Model.CantidadDisponible.GetValueOrDefault(idDet) : 0)</td>
+                                    <button type="submit" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2" asp-page-handler="AgregarArticulo" asp-route-idArticulo="@a.IdArticulo">
+                                        <div>
+                                            <span class="fw-semibold text-dark">@a.Nombre</span>
+                                            <span class="text-muted small ms-2">Código: @a.CodigoBarras</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <span class="fw-bold text-dark">Q @a.PrecioBase.ToString("N2")</span>
+                                            <span class="btn btn-sm btn-light border rounded-pill px-2 py-0"><i class="bi bi-plus-lg"></i></span>
+                                        </div>
+                                    </button>
                                 }
-                                <td class="text-end">@linea.PrecioUnitario.ToString("N2")</td>
-                                <td class="text-end">@((linea.PrecioUnitario * linea.Cantidad).ToString("N2"))</td>
-                                @if (!esDevolucion)
+                            </div>
+                        }
+                    }
+
+                    <div class="table-responsive rounded-3 border">
+                        <table class="table table-hover table-pos mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-3">Artículo</th>
+                                    <th class="text-center" style="width:110px">Cantidad</th>
+                                    @if (esDevolucion)
+                                    {
+                                        <th class="text-end" style="width:150px">Disponible</th>
+                                    }
+                                    <th class="text-end" style="width:110px">Precio</th>
+                                    <th class="text-end" style="width:110px">Subtotal</th>
+                                    @if (!esDevolucion)
+                                    {
+                                        <th class="text-end pe-3" style="width:140px">Acciones</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var i = 0; i < Model.Input.Lineas.Count; i++)
                                 {
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCantidad" data-id="@linea.IdArticulo" data-nombre="@linea.NombreArticulo" data-cantidad="@linea.Cantidad">Modificar</button>
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" asp-page-handler="QuitarArticulo" asp-route-idArticulo="@linea.IdArticulo">Quitar</button>
-                                    </td>
+                                    var linea = Model.Input.Lineas[i];
+                                    <tr>
+                                        <td class="ps-3 fw-medium text-dark">
+                                            @linea.NombreArticulo
+                                            <input type="hidden" name="Input.Lineas[@i].IdArticulo" value="@linea.IdArticulo" />
+                                            <input type="hidden" name="Input.Lineas[@i].IdDetalleVenta" value="@linea.IdDetalleVenta" />
+                                            <input type="hidden" name="Input.Lineas[@i].NombreArticulo" value="@linea.NombreArticulo" />
+                                            <input type="hidden" name="Input.Lineas[@i].PrecioUnitario" value="@linea.PrecioUnitario.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                            <input type="hidden" name="Input.Lineas[@i].Cantidad" value="@linea.Cantidad" />
+                                        </td>
+                                        <td class="text-center fw-semibold">@linea.Cantidad</td>
+                                        @if (esDevolucion)
+                                        {
+                                            <td class="text-end text-muted">@(linea.IdDetalleVenta is int idDet ? Model.CantidadDisponible.GetValueOrDefault(idDet) : 0)</td>
+                                        }
+                                        <td class="text-end">Q @linea.PrecioUnitario.ToString("N2")</td>
+                                        <td class="text-end fw-bold text-dark">Q @((linea.PrecioUnitario * linea.Cantidad).ToString("N2"))</td>
+                                        @if (!esDevolucion)
+                                        {
+                                            <td class="text-end pe-3">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 me-1" data-bs-toggle="modal" data-bs-target="#modalCantidad" data-id="@linea.IdArticulo" data-nombre="@linea.NombreArticulo" data-cantidad="@linea.Cantidad" title="Modificar cantidad">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" asp-page-handler="QuitarArticulo" asp-route-idArticulo="@linea.IdArticulo" title="Quitar artículo">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        }
+                                    </tr>
                                 }
-                            </tr>
-                        }
-                        @if (Model.Input.Lineas.Count == 0)
-                        {
-                            <tr><td colspan="6" class="ps-3 text-muted">Sin artículos.</td></tr>
-                        }
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="@(esDevolucion ? 4 : 3)" class="text-end">Total</th>
-                            <th class="text-end">@totalVenta.ToString("N2")</th>
-                            @if (!esDevolucion)
-                            {
-                                <th></th>
-                            }
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-            <div class="card-body d-flex justify-content-end">
-                @if (esDevolucion)
-                {
-                    <button type="submit" class="btn btn-danger" asp-page-handler="Registrar" onclick="return confirm('¿Registrar la devolución de todos los artículos disponibles?');">Registrar devolución</button>
-                }
-                else
-                {
-                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalConfirmarVenta">Registrar venta</button>
-                }
+
+                                @if (Model.Input.Lineas.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="@(esDevolucion ? 5 : 5)" class="text-center py-5">
+                                            <div class="text-muted">
+                                                <i class="bi bi-box-seam fs-1 text-secondary opacity-50 d-block mb-2"></i>
+                                                <div class="fw-bold text-dark fs-6">La venta aún no tiene artículos</div>
+                                                <span class="small">Busca un artículo para agregarlo y ajustar su cantidad.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Columna Derecha: Tarjeta de Total y Acciones de Cobro -->
+        <div class="col-12 col-lg-4">
+            <div class="d-flex flex-column gap-3 position-sticky" style="top: 85px;">
+                <!-- Tarjeta Total -->
+                <div class="pos-total-card shadow-sm">
+                    <span class="text-white-50 small fw-medium">Total de la venta</span>
+                    <div class="display-5 fw-bold my-2">Q @totalVenta.ToString("N2")</div>
+                    <span class="text-white-50 small">
+                        @(Model.Input.Lineas.Count == 0 ? "Sin artículos agregados" : $"{Model.Input.Lineas.Sum(l => l.Cantidad)} unidad(es) seleccionada(s)")
+                    </span>
+                </div>
+
+                <!-- Tarjeta Acciones -->
+                <div class="pos-action-card shadow-sm">
+                    <div class="d-flex justify-content-between text-secondary small mb-3 pb-2 border-bottom">
+                        <span>Artículos distintos:</span>
+                        <span class="fw-bold text-dark">@Model.Input.Lineas.Count</span>
+                    </div>
+
+                    @if (esDevolucion)
+                    {
+                        <button type="submit" class="btn btn-danger w-100 py-2 mb-2 d-flex align-items-center justify-content-center gap-2 fw-medium @(Model.Input.Lineas.Count == 0 ? "disabled" : "")" asp-page-handler="Registrar" onclick="return confirm('¿Registrar la devolución de los artículos?');">
+                            <i class="bi bi-arrow-counterclockwise"></i> Registrar devolución
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-brand-primary w-100 py-2 mb-2 d-flex align-items-center justify-content-center gap-2 fw-medium @(Model.Input.Lineas.Count == 0 ? "disabled" : "")" data-bs-toggle="modal" data-bs-target="#modalConfirmarVenta">
+                            <i class="bi bi-credit-card"></i> Cobrar venta
+                        </button>
+                    }
+
+                    <a asp-page="/Ventas/Nueva" class="btn btn-outline-secondary w-100 py-2 small fw-medium">
+                        Cancelar venta
+                    </a>
+
+                    <p class="text-muted small text-center mt-3 mb-0" style="font-size: 0.78rem;">
+                        Agrega al menos un artículo para continuar al cobro.
+                    </p>
+                </div>
             </div>
         </div>
-    }
+    </div>
 
+    <!-- Modales -->
     @if (!esDevolucion)
     {
-        <div class="modal fade" id="modalCantidad">
+        <!-- Modal Cantidad -->
+        <div class="modal fade" id="modalCantidad" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalCantidadLabel">Modificar cantidad</h5>
+                <div class="modal-content border-0 shadow" style="border-radius: 12px;">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title fw-bold">Modificar cantidad</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
-                    <div class="modal-body">
-                        <p class="mb-2" id="modalCantidadArticulo"></p>
-                        name="idArticuloModal" id="inputIdArticuloModal"
-                        <label class="form-label" for="inputNuevaCantidad">Nueva cantidad</label>
+                    <div class="modal-body py-3">
+                        <p class="fw-semibold text-dark mb-2" id="modalCantidadArticulo"></p>
+                        <input type="hidden" name="idArticuloModal" id="inputIdArticuloModal" />
+                        <label class="form-label small fw-semibold text-secondary" for="inputNuevaCantidad">Nueva cantidad</label>
                         <input type="number" min="1" name="cantidadNueva" class="form-control" id="inputNuevaCantidad" />
                     </div>
-                    <div class="modal-footer">
+                    <div class="modal-footer border-top-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" id="btnGuardarCantidad" asp-page-handler="ModificarCantidad">Guardar</button>
+                        <button type="submit" class="btn btn-brand-primary px-3" id="btnGuardarCantidad" asp-page-handler="ModificarCantidad">Guardar</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Modal Cobro / Confirmación -->
         <div class="modal fade" id="modalConfirmarVenta" tabindex="-1" aria-labelledby="modalConfirmarVentaLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="modalConfirmarVentaLabel">Confirmar venta</h5>
+                <div class="modal-content border-0 shadow" style="border-radius: 14px;">
+                    <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                        <div>
+                            <h5 class="modal-title fw-bold text-dark" id="modalConfirmarVentaLabel">Cobrar venta</h5>
+                            <p class="text-muted small mb-0">Descontará existencias de los lotes por política FEFO.</p>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
-                    <div class="modal-body">
-                        <p>¿Desea registrar la venta con los artículos seleccionados? Esta acción descontará existencias de los lotes FEFO.</p>
-                        <div class="row g-2">
+                    <div class="modal-body p-4">
+                        <div class="p-3 mb-3 bg-light rounded-3 d-flex justify-content-between align-items-center">
+                            <span class="text-secondary small fw-medium">Total a cobrar:</span>
+                            <span class="fs-4 fw-bold text-dark">Q @totalVenta.ToString("N2")</span>
+                        </div>
+                        <div class="row g-3">
                             <div class="col-6">
-                                <label asp-for="Input.MontoEfectivo" class="form-label">Pago en efectivo</label>
-                                <input asp-for="Input.MontoEfectivo" class="form-control" type="number" step="0.01" min="0" id="inputMontoEfectivo" />
+                                <label asp-for="Input.MontoEfectivo" class="form-label small fw-semibold text-secondary">Pago en efectivo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted">Q</span>
+                                    <input asp-for="Input.MontoEfectivo" class="form-control" type="number" step="0.01" min="0" id="inputMontoEfectivo" />
+                                </div>
                             </div>
                             <div class="col-6">
-                                <label asp-for="Input.MontoTarjeta" class="form-label">Pago con tarjeta</label>
-                                <input asp-for="Input.MontoTarjeta" class="form-control" type="number" step="0.01" min="0" id="inputMontoTarjeta" />
+                                <label asp-for="Input.MontoTarjeta" class="form-label small fw-semibold text-secondary">Pago con tarjeta</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted">Q</span>
+                                    <input asp-for="Input.MontoTarjeta" class="form-control" type="number" step="0.01" min="0" id="inputMontoTarjeta" />
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-success" asp-page-handler="Registrar">Sí, registrar</button>
+                    <div class="modal-footer border-top-0 px-4 pb-4">
+                        <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-brand-primary px-4" asp-page-handler="Registrar">Confirmar y registrar</button>
                     </div>
                 </div>
             </div>
         </div>
     }
+
     <button type="submit" id="btnCambiarTipo" class="d-none" asp-page-handler="CambiarTipo"></button>
 </form>
 
@@ -277,8 +453,8 @@
             var modalConfirmar = document.getElementById('modalConfirmarVenta');
             if (modalConfirmar) {
                 modalConfirmar.addEventListener('show.bs.modal', function () {
-                    inputEfectivo.value = '@totalVenta.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)';
-                    inputTarjeta.value = '0.00';
+                    if (inputEfectivo) inputEfectivo.value = '@totalVenta.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)';
+                    if (inputTarjeta) inputTarjeta.value = '0.00';
                 });
             }
         })();

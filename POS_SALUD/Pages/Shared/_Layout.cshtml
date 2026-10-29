@@ -5,64 +5,322 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - POS Farma</title>
+    <!-- Bootstrap 5 CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+            :root {
+                --brand-color: #0b5e5c;
+                --brand-hover: #084342;
+                --sidebar-bg: #ffffff;
+                --sidebar-border: #e2e8f0;
+                --main-bg: #f8fafc;
+                --text-dark: #0f172a;
+                --text-muted: #64748b;
+            }
+
+            body {
+                font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+                background-color: var(--main-bg);
+                color: var(--text-dark);
+                margin: 0;
+            }
+
+            .app-shell {
+                display: flex;
+                min-height: 100vh;
+            }
+
+            /* Sidebar lateral */
+            .app-sidebar {
+                width: 270px;
+                background-color: var(--sidebar-bg);
+                border-right: 1px solid var(--sidebar-border);
+                display: flex;
+                flex-direction: column;
+                flex-shrink: 0;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+                z-index: 100;
+            }
+
+            .sidebar-brand-box {
+                padding: 1.5rem 1.25rem 1rem;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .brand-icon-box {
+                background-color: var(--brand-color);
+                color: #ffffff;
+                width: 38px;
+                height: 38px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+            }
+
+            .branch-selector-box {
+                margin: 0.5rem 1.25rem 1.25rem;
+                padding: 0.65rem 0.85rem;
+                background-color: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .sidebar-content-scroll {
+                flex-grow: 1;
+                overflow-y: auto;
+                padding: 0 1rem;
+            }
+
+            .nav-category {
+                font-size: 0.72rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                color: #94a3b8;
+                margin: 1.25rem 0.5rem 0.5rem;
+            }
+
+            .nav-item-link {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 0.6rem 0.75rem;
+                color: #475569;
+                text-decoration: none;
+                border-radius: 8px;
+                font-size: 0.9rem;
+                font-weight: 500;
+                transition: all 0.15s ease-in-out;
+                margin-bottom: 2px;
+            }
+
+                .nav-item-link:hover {
+                    background-color: #f1f5f9;
+                    color: var(--brand-color);
+                }
+
+                .nav-item-link.active {
+                    background-color: #e6f3f2;
+                    color: var(--brand-color);
+                    font-weight: 600;
+                }
+
+                .nav-item-link i {
+                    font-size: 1.1rem;
+                }
+
+            /* Sidebar Footer (Usuario y Cerrar Sesión) */
+            .sidebar-user-footer {
+                padding: 1rem 1.25rem;
+                border-top: 1px solid var(--sidebar-border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                background-color: #ffffff;
+            }
+
+            .user-logout-btn {
+                background: none;
+                border: none;
+                color: #64748b;
+                padding: 6px;
+                border-radius: 6px;
+                transition: color 0.15s, background-color 0.15s;
+                cursor: pointer;
+            }
+
+                .user-logout-btn:hover {
+                    color: #dc3545;
+                    background-color: #fee2e2;
+                }
+
+            /* Contenido Principal y Header */
+            .app-content {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                min-width: 0;
+            }
+
+            .app-topbar {
+                height: 68px;
+                background-color: #ffffff;
+                border-bottom: 1px solid var(--sidebar-border);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 2rem;
+                position: sticky;
+                top: 0;
+                z-index: 90;
+            }
+
+            .search-input-group {
+                width: 340px;
+            }
+
+                .search-input-group .form-control {
+                    border-radius: 8px;
+                    font-size: 0.88rem;
+                    background-color: #f8fafc;
+                }
+
+                    .search-input-group .form-control:focus {
+                        background-color: #ffffff;
+                        border-color: var(--brand-color);
+                        box-shadow: 0 0 0 0.2rem rgba(11, 94, 92, 0.15);
+                    }
+
+            .app-main {
+                padding: 2rem;
+                background-color: #fcfdfd;
+                flex-grow: 1;
+            }
+
+            .search-result-item:hover {
+                background-color: #f1f5f9;
+            }
+    </style>
 </head>
 <body>
     @if (User.Identity?.IsAuthenticated == true)
     {
         <div class="app-shell">
+            <!-- Sidebar -->
             <aside class="app-sidebar">
-                <div class="sidebar-brand">
-                    <span class="brand-icon">+</span>
-                    <div>
-                        <div class="brand-title">POS System</div>
-                        <div class="brand-sub">Farmacia</div>
+                <div class="sidebar-brand-box">
+                    <div class="brand-icon-box">
+                        <i class="bi bi-plus-lg"></i>
                     </div>
+                    <span class="fs-5 fw-bold" style="color: var(--brand-color);">POS Farma</span>
                 </div>
-                <div class="sidebar-company">
-                    <div class="sidebar-label">Empresa</div>
-                    <div class="sidebar-value">Matriz</div>
-                    <div class="sidebar-label mt-2">Sucursal</div>
-                    <div class="sidebar-value">@(User.FindFirstValue("IdSucursal") is { } s ? "Sucursal " + s : "—")</div>
-                    <div class="sidebar-label mt-2">Usuario</div>
-                    <div class="sidebar-value">@User.Identity.Name</div>
-                    <span class="badge role-badge mt-1">@User.FindFirstValue(ClaimTypes.Role)</span>
+
+                <!-- Selector de Sucursal -->
+                <div class="branch-selector-box">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shop text-muted fs-5"></i>
+                        <div>
+                            <div class="text-uppercase text-muted" style="font-size: 0.65rem; font-weight: 700;">Sucursal</div>
+                            <div class="fw-semibold small">@(User.FindFirstValue("IdSucursal") is { } s ? "Sucursal " + s : "Sucursal actual")</div>
+                        </div>
+                    </div>
+                    <i class="bi bi-chevron-expand text-muted small"></i>
                 </div>
-                <div class="sidebar-section">Navegación</div>
-                <nav class="sidebar-nav">
-                    <a class="sidebar-link" asp-page="/Index">Inicio</a>
-                    <details class="sidebar-menu" open>
-                        <summary class="sidebar-section">Operaciones</summary>
-                        <a class="sidebar-link" asp-page="/Jornada/Index">Jornada de caja</a>
-                        <a class="sidebar-link" asp-page="/Ventas/Nueva">Ventas</a>
-                        <a class="sidebar-link" asp-page="/Compras/Nueva">Compras</a>
-                    </details>
-                    <details class="sidebar-menu" open>
-                        <summary class="sidebar-section">Movimientos</summary>
-                        <a class="sidebar-link" asp-page="/Inventario/Index">Inventario</a>
-                        <a class="sidebar-link" asp-page="/Traslados/Index">Traslados</a>
-                    </details>
-                    <details class="sidebar-menu" open>
-                        <summary class="sidebar-section">Maestros</summary>
-                        <a class="sidebar-link" asp-page="/Articulos/Index">Artículos</a>
-                        <a class="sidebar-link" asp-page="/Catalogos/Laboratorios">Laboratorios</a>
-                        <a class="sidebar-link" asp-page="/Catalogos/Genericos">Genéricos</a>
-                        <a class="sidebar-link" asp-page="/Catalogos/Proveedores">Proveedores</a>
-                        <a class="sidebar-link" asp-page="/Catalogos/Clientes">Clientes</a>
-                    </details>
-                </nav>
-                <form method="post" asp-page="/Account/Logout" class="sidebar-logout">
-                    <button type="submit" class="btn btn-outline-light btn-sm w-100">Cerrar sesión</button>
-                </form>
+
+                <!-- Navegación -->
+                <div class="sidebar-content-scroll">
+                    <div class="nav-category">Operaciones</div>
+                    <a class="nav-item-link" asp-page="/Index">
+                        <i class="bi bi-grid"></i>
+                        <span>Panel de control</span>
+                    </a>
+                    <a class="nav-item-link" asp-page="/Jornada/Index">
+                        <i class="bi bi-wallet2"></i>
+                        <span>Jornada de caja</span>
+                    </a>
+                    <a class="nav-item-link" asp-page="/Ventas/Nueva">
+                        <i class="bi bi-basket2"></i>
+                        <span>Punto de venta</span>
+                    </a>
+
+                    <div class="nav-category">Movimientos</div>
+                    <a class="nav-item-link" asp-page="/Compras/Nueva">
+                        <i class="bi bi-file-earmark-plus"></i>
+                        <span>Registrar compra</span>
+                    </a>
+                    <a class="nav-item-link" asp-page="/Inventario/Index">
+                        <i class="bi bi-boxes"></i>
+                        <span>Inventario por lotes</span>
+                    </a>
+                    <a class="nav-item-link" asp-page="/Traslados/Index">
+                        <i class="bi bi-arrow-left-right"></i>
+                        <span>Traslados</span>
+                    </a>
+
+                    <div class="nav-category">Catálogos</div>
+                    <a class="nav-item-link" asp-page="/Articulos/Index">
+                        <i class="bi bi-capsule"></i>
+                        <span>Artículos</span>
+                    </a>
+                    <a class="nav-item-link" asp-page="/Catalogos/Laboratorios">
+                        <i class="bi bi-building"></i>
+                        <span>Laboratorios</span>
+                    </a>
+                    <a class="nav-item-link" asp-page="/Catalogos/Genericos">
+                        <i class="bi bi-tag"></i>
+                        <span>Genéricos</span>
+                    </a>
+                    <a class="nav-item-link" asp-page="/Catalogos/Proveedores">
+                        <i class="bi bi-truck"></i>
+                        <span>Proveedores</span>
+                    </a>
+                    <a class="nav-item-link" asp-page="/Catalogos/Clientes">
+                        <i class="bi bi-people"></i>
+                        <span>Clientes</span>
+                    </a>
+                </div>
+
+                <!-- Usuario y Cerrar Sesión -->
+                <div class="sidebar-user-footer">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-muted border" style="width: 36px; height: 36px;">
+                            <i class="bi bi-person"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold small text-truncate" style="max-width: 130px;">@(User.Identity.Name ?? "Usuario")</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Sesión actual</div>
+                        </div>
+                    </div>
+                    <form method="post" asp-page="/Account/Logout" class="m-0">
+                        <button type="submit" class="user-logout-btn" title="Cerrar sesión">
+                            <i class="bi bi-box-arrow-right fs-5"></i>
+                        </button>
+                    </form>
+                </div>
             </aside>
+
+            <!-- Contenido Principal -->
             <div class="app-content">
                 <header class="app-topbar">
-                    <div class="topbar-search">Buscar módulo o producto…</div>
-                    <div class="topbar-user">
-                        <span class="avatar">@(User.Identity.Name?.Substring(0, 1).ToUpperInvariant())</span>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb m-0 small">
+                            <li class="breadcrumb-item text-muted">Operaciones</li>
+                            <li class="breadcrumb-item active text-dark fw-medium" aria-current="page">@ViewData["Title"]</li>
+                        </ol>
+                    </nav>
+
+                    <!-- Buscador Funcional -->
+                    <div class="search-input-group position-relative">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text"
+                                   id="globalSearchInput"
+                                   class="form-control border-start-0 bg-light"
+                                   placeholder="Buscar módulo o producto..."
+                                   autocomplete="off" />
+                        </div>
+
+                        <!-- Desplegable dinámico de resultados -->
+                        <div id="searchResultsDropdown"
+                             class="dropdown-menu shadow-sm p-2 w-100"
+                             style="display: none; position: absolute; top: 105%; left: 0; z-index: 1050; border-radius: 10px; max-height: 380px; overflow-y: auto;">
+                        </div>
                     </div>
                 </header>
+
                 <main role="main" class="app-main">
                     @RenderBody()
                 </main>
@@ -71,12 +329,102 @@
     }
     else
     {
-        <main role="main" class="container">
+        <main role="main">
             @RenderBody()
         </main>
     }
+
+    <!-- Scripts base -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Script de búsqueda global -->
+    <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const input = document.getElementById("globalSearchInput");
+                const dropdown = document.getElementById("searchResultsDropdown");
+
+                if (!input || !dropdown) return;
+
+                // Catálogo de módulos para autocompletado
+                const modulos = [
+                    { nombre: "Panel de control", url: "/Index", icon: "bi-grid", cat: "Módulo" },
+                    { nombre: "Jornada de caja", url: "/Jornada/Index", icon: "bi-wallet2", cat: "Operaciones" },
+                    { nombre: "Punto de venta (Ventas)", url: "/Ventas/Nueva", icon: "bi-basket2", cat: "Operaciones" },
+                    { nombre: "Registrar compra", url: "/Compras/Nueva", icon: "bi-file-earmark-plus", cat: "Movimientos" },
+                    { nombre: "Inventario por lotes", url: "/Inventario/Index", icon: "bi-boxes", cat: "Movimientos" },
+                    { nombre: "Traslados de inventario", url: "/Traslados/Index", icon: "bi-arrow-left-right", cat: "Movimientos" },
+                    { nombre: "Artículos y Productos", url: "/Articulos/Index", icon: "bi-capsule", cat: "Catálogo" },
+                    { nombre: "Laboratorios", url: "/Catalogos/Laboratorios", icon: "bi-building", cat: "Catálogo" },
+                    { nombre: "Genéricos", url: "/Catalogos/Genericos", icon: "bi-tag", cat: "Catálogo" },
+                    { nombre: "Proveedores", url: "/Catalogos/Proveedores", icon: "bi-truck", cat: "Catálogo" },
+                    { nombre: "Clientes", url: "/Catalogos/Clientes", icon: "bi-people", cat: "Catálogo" }
+                ];
+
+                input.addEventListener("input", function () {
+                    const query = input.value.trim().toLowerCase();
+
+                    if (query.length === 0) {
+                        dropdown.style.display = "none";
+                        dropdown.innerHTML = "";
+                        return;
+                    }
+
+                    const matches = modulos.filter(m => m.nombre.toLowerCase().includes(query));
+                    let html = "";
+
+                    if (matches.length > 0) {
+                        html += `<div class="px-2 py-1 text-uppercase text-muted" style="font-size: 0.68rem; font-weight: 700;">Módulos del Sistema</div>`;
+                        matches.forEach(m => {
+                            html += `
+                                        <a href="${m.url}" class="dropdown-item d-flex align-items-center gap-2 py-2 rounded search-result-item">
+                                            <i class="bi ${m.icon} text-secondary"></i>
+                                            <div>
+                                                <div class="fw-medium text-dark small">${m.nombre}</div>
+                                                <span class="text-muted" style="font-size: 0.72rem;">${m.cat}</span>
+                                            </div>
+                                        </a>
+                                    `;
+                        });
+                    }
+
+                    // Opción para buscar productos en el catálogo
+                    html += `
+                                <div class="dropdown-divider my-1"></div>
+                                <div class="px-2 py-1 text-uppercase text-muted" style="font-size: 0.68rem; font-weight: 700;">Buscar producto</div>
+                                <a href="/Articulos/Index?buscar=${encodeURIComponent(query)}" class="dropdown-item d-flex align-items-center gap-2 py-2 rounded text-primary search-result-item">
+                                    <i class="bi bi-search"></i>
+                                    <span class="small">Buscar "<strong>${escapeHtml(query)}</strong>" en Artículos...</span>
+                                </a>
+                            `;
+
+                    dropdown.innerHTML = html;
+                    dropdown.style.display = "block";
+                });
+
+                // Enter directo
+                input.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        const query = input.value.trim();
+                        if (query.length > 0) {
+                            window.location.href = `/Articulos/Index?buscar=${encodeURIComponent(query)}`;
+                        }
+                    }
+                });
+
+                // Ocultar al hacer clic fuera
+                document.addEventListener("click", function (e) {
+                    if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.style.display = "none";
+                    }
+                });
+
+                function escapeHtml(text) {
+                    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                }
+            });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

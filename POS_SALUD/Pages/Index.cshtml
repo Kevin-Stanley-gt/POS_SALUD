@@ -1,32 +1,195 @@
 @page
-@model POS_SALUD.Pages.IndexModel
+@model IndexModel
 @{
-    ViewData["Title"] = "Inicio";
+    ViewData["Title"] = "Panel de control";
 }
-<div class="page-header">
-    <h1>Panel de control</h1>
-    <div class="d-flex gap-2">
-        <a asp-page="/Ventas/Nueva" class="btn btn-primary btn-sm">Nueva venta</a>
-        <a asp-page="/Compras/Nueva" class="btn btn-outline-primary btn-sm">Nueva compra</a>
+
+<style>
+    .kpi-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1.5rem;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+        .kpi-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+    .action-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.25rem;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.15s ease;
+    }
+
+        .action-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            color: inherit;
+            transform: translateY(-2px);
+        }
+
+    .action-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background-color: #e6f3f2;
+        color: #0b5e5c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .btn-brand-primary {
+        background-color: #0b5e5c;
+        border-color: #0b5e5c;
+        color: white;
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+        .btn-brand-primary:hover {
+            background-color: #084342;
+            color: white;
+        }
+</style>
+
+<div class="mb-4 d-flex align-items-center justify-content-between">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Panel de control</h2>
+        <p class="text-secondary small mb-0">Una vista clara del inventario y tus operaciones diarias.</p>
+    </div>
+    <a asp-page="/Ventas/Nueva" class="btn btn-brand-primary d-flex align-items-center gap-2">
+        <i class="bi bi-basket2"></i>
+        <span>Ir a vender</span>
+    </a>
+</div>
+
+<!-- Métricas (KPIs) -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="kpi-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-secondary small fw-medium">Artículos activos</span>
+                <i class="bi bi-capsule fs-5 text-secondary"></i>
+            </div>
+            <div class="display-6 fw-bold text-dark mb-2">2</div>
+            <div class="text-muted small">Disponibles en el catálogo</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="kpi-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-secondary small fw-medium">Lotes próximos a vencer</span>
+                <i class="bi bi-calendar-event fs-5 text-secondary"></i>
+            </div>
+            <div class="display-6 fw-bold text-dark mb-2">0</div>
+            <div class="text-muted small">Con existencia · Próximos 60 días</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="kpi-card h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-secondary small fw-medium">Bajo stock mínimo</span>
+                <i class="bi bi-box-seam fs-5 text-secondary"></i>
+            </div>
+            <div class="display-6 fw-bold text-dark mb-2">0</div>
+            <div class="text-muted small">Artículos que requieren reposición</div>
+        </div>
     </div>
 </div>
-<div class="row g-3">
-    <div class="col-md-4">
-        <div class="card stat-card p-3 h-100">
-            <div class="stat-label">Artículos activos</div>
-            <div class="stat-value">@Model.TotalArticulos</div>
+
+<!-- Accesos directos -->
+<div class="mb-4">
+    <h5 class="fw-bold text-dark mb-3">¿Qué necesitas hacer?</h5>
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <a asp-page="/Ventas/Nueva" class="action-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="action-icon-wrapper">
+                        <i class="bi bi-basket2"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">Punto de venta</div>
+                        <div class="text-secondary small">Busca artículos y registra una venta.</div>
+                    </div>
+                </div>
+                <i class="bi bi-arrow-up-right text-muted"></i>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a asp-page="/Compras/Nueva" class="action-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="action-icon-wrapper">
+                        <i class="bi bi-file-earmark-plus"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">Registrar compra</div>
+                        <div class="text-secondary small">Ingresa artículos por lote y vencimiento.</div>
+                    </div>
+                </div>
+                <i class="bi bi-arrow-up-right text-muted"></i>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a asp-page="/Jornada/Index" class="action-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="action-icon-wrapper">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">Jornada de caja</div>
+                        <div class="text-secondary small">Gestiona la apertura y el cierre de caja.</div>
+                    </div>
+                </div>
+                <i class="bi bi-arrow-up-right text-muted"></i>
+            </a>
+        </div>
+        <div class="col-12 col-md-6">
+            <a asp-page="/Inventario/Index" class="action-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="action-icon-wrapper">
+                        <i class="bi bi-boxes"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-dark">Inventario por lotes</div>
+                        <div class="text-secondary small">Consulta lotes, costos y vencimientos.</div>
+                    </div>
+                </div>
+                <i class="bi bi-arrow-up-right text-muted"></i>
+            </a>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card stat-card p-3 h-100" style="border-left-color:#ffc107;">
-            <div class="stat-label">Lotes con existencia que vencen en 60 días</div>
-            <div class="stat-value text-warning">@Model.LotesPorVencer</div>
+</div>
+
+<!-- Tarjeta de Vencimientos -->
+<div class="card border-0 shadow-sm p-4" style="border-radius: 14px; border: 1px solid #e2e8f0 !important;">
+    <h6 class="fw-bold text-dark mb-3">Control de vencimientos</h6>
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                 style="width: 40px; height: 40px; background-color: #d1fae5; color: #059669; flex-shrink: 0;">
+                <i class="bi bi-check-lg fs-5"></i>
+            </div>
+            <div>
+                <div class="fw-medium small text-dark">No hay lotes con existencia que venzan en los próximos 60 días.</div>
+                <div class="text-muted small">Consulta el inventario para revisar el detalle de cada lote.</div>
+            </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card stat-card p-3 h-100" style="border-left-color:#dc3545;">
-            <div class="stat-label">Artículos bajo stock mínimo</div>
-            <div class="stat-value text-danger">@Model.ArticulosBajoMinimo</div>
-        </div>
+        <a asp-page="/Inventario/Index" class="btn btn-outline-secondary btn-sm px-3 py-2 fw-medium d-flex align-items-center gap-2" style="border-radius: 8px;">
+            <span>Ver inventario</span>
+            <i class="bi bi-arrow-right"></i>
+        </a>
     </div>
 </div>
