@@ -6,115 +6,205 @@
 }
 
 <style>
+    :root {
+        --brand-color: #0b5e5c;
+        --brand-hover: #084342;
+    }
+
     .brand-btn-primary {
-        background-color: #0b5e5c;
-        border-color: #0b5e5c;
+        background-color: var(--brand-color);
+        border-color: var(--brand-color);
         color: #ffffff;
         font-weight: 500;
         border-radius: 8px;
     }
 
         .brand-btn-primary:hover {
-            background-color: #084342;
-            border-color: #084342;
+            background-color: var(--brand-hover);
+            border-color: var(--brand-hover);
             color: #ffffff;
         }
 
-    .table-card {
+    .art-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
         overflow: hidden;
     }
 
-    .table-custom thead th {
-        background-color: #f8fafc;
-        color: #64748b;
+    .table-art thead th {
+        background-color: #ffffff;
+        color: #475569;
         font-size: 0.78rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        padding: 0.85rem 1rem;
+        font-weight: 600;
+        padding: 0.9rem 1.25rem;
         border-bottom: 1px solid #e2e8f0;
     }
 
-    .table-custom tbody td {
-        padding: 0.85rem 1rem;
+    .table-art tbody td {
+        padding: 1rem 1.25rem;
         vertical-align: middle;
         font-size: 0.88rem;
         color: #1e293b;
         border-bottom: 1px solid #f1f5f9;
     }
+
+    .table-art tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .filter-input {
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 0.9rem;
+    }
+
+        .filter-input:focus {
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 0.2rem rgba(11, 94, 92, 0.12);
+        }
+
+    .btn-more-options {
+        color: #64748b;
+        border: none;
+        background: transparent;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+
+        .btn-more-options:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+
+    .info-callout {
+        color: #475569;
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 </style>
 
-<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold text-dark mb-1">Catálogo de Artículos</h2>
-        <p class="text-secondary small mb-0">Administra los medicamentos y productos registrados en el sistema.</p>
+        <h2 class="fw-bold text-dark mb-1">Artículos</h2>
+        <p class="text-secondary small mb-0">Administra el catálogo y la clasificación de los productos.</p>
     </div>
-    <button type="button" class="btn brand-btn-primary d-inline-flex align-items-center gap-2 py-2 px-3" data-bs-toggle="modal" data-bs-target="#modalNuevoArticulo">
-        <i class="bi bi-plus-lg"></i>
-        <span>Nuevo artículo</span>
-    </button>
+    <div>
+        <button type="button" class="btn brand-btn-primary d-inline-flex align-items-center gap-2 px-3 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNuevoArticulo">
+            <i class="bi bi-plus-lg"></i>
+            <span>Nuevo artículo</span>
+        </button>
+    </div>
 </div>
 
-<div class="table-card shadow-sm">
+<!-- Filtros de búsqueda -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-6">
+        <label class="form-label small fw-semibold text-secondary mb-1">Buscar artículo</label>
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text"
+                   id="inputFiltroArticulo"
+                   class="form-control border-start-0 filter-input ps-0"
+                   placeholder="Buscar por código o nombre..."
+                   autocomplete="off" />
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1">Genérico</label>
+        <select id="selectFiltroGenerico" class="form-select filter-input">
+            <option value="">Todos los genéricos</option>
+            @foreach (var g in Model.Genericos)
+            {
+                <option value="@g.Nombre.ToLowerInvariant()">@g.Nombre</option>
+            }
+        </select>
+    </div>
+    <div class="col-12 col-md-3">
+        <label class="form-label small fw-semibold text-secondary mb-1">Laboratorio</label>
+        <select id="selectFiltroLaboratorio" class="form-select filter-input">
+            <option value="">Todos los laboratorios</option>
+            @foreach (var l in Model.Laboratorios)
+            {
+                <option value="@l.Nombre.ToLowerInvariant()">@l.Nombre</option>
+            }
+        </select>
+    </div>
+</div>
+
+<!-- Cabecera de listado -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="fw-bold text-dark mb-0">Artículos registrados</h6>
+    <span class="text-muted small" id="contadorArticulos">@Model.Articulos.Count artículos</span>
+</div>
+
+<!-- Tabla de Artículos -->
+<div class="art-card shadow-sm mb-4">
     <div class="table-responsive">
-        <table class="table table-hover table-custom mb-0">
+        <table class="table table-hover table-art mb-0" id="tablaArticulos">
             <thead>
                 <tr>
-                    <th class="ps-4">Código</th>
-                    <th>Nombre</th>
-                    <th>Genérico</th>
-                    <th>Laboratorio</th>
-                    <th class="text-end">Precio Base</th>
-                    <th class="pe-4 text-center">Receta</th>
+                    <th style="min-width: 150px;">Código</th>
+                    <th style="min-width: 280px;">Nombre</th>
+                    <th style="min-width: 180px;">Genérico</th>
+                    <th style="min-width: 180px;">Laboratorio</th>
+                    <th class="text-end pe-4" style="width: 60px;"></th>
                 </tr>
             </thead>
             <tbody>
                 @if (!Model.Articulos.Any())
                 {
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                    <tr id="filaSinArticulos">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-capsule fs-1 d-block mb-2 text-secondary opacity-50"></i>
                             No hay artículos registrados en el catálogo.
                         </td>
                     </tr>
                 }
                 @foreach (var a in Model.Articulos)
                 {
-                    <tr>
-                        <td class="ps-4 font-monospace fw-semibold text-secondary">@a.CodigoBarras</td>
-                        <td class="fw-semibold text-dark">@a.Nombre</td>
-                        <td>
-                            @if (a.Generico != null)
-                            {
-                                <span class="badge bg-light text-dark border">@a.Generico.Nombre</span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
+                    <tr class="articulo-row"
+                        data-codigo="@(a.CodigoBarras?.ToLowerInvariant() ?? "")"
+                        data-nombre="@(a.Nombre?.ToLowerInvariant() ?? "")"
+                        data-generico="@(a.Generico?.Nombre?.ToLowerInvariant() ?? "")"
+                        data-laboratorio="@(a.Laboratorio?.Nombre?.ToLowerInvariant() ?? "")">
+                        <td class="font-monospace text-secondary fw-semibold">
+                            @(string.IsNullOrWhiteSpace(a.CodigoBarras) ? "—" : a.CodigoBarras)
                         </td>
-                        <td>@(a.Laboratorio?.Nombre ?? "—")</td>
-                        <td class="text-end fw-bold text-dark">Q @a.PrecioBase.ToString("N2")</td>
-                        <td class="pe-4 text-center">
-                            @if (a.RequiereReceta)
-                            {
-                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
-                                    <i class="bi bi-file-earmark-medical me-1"></i> Requiere
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-light text-muted border px-2 py-1">Libre</span>
-                            }
+                        <td class="fw-semibold text-dark">
+                            @a.Nombre
+                        </td>
+                        <td class="text-secondary text-uppercase small">
+                            @(a.Generico?.Nombre ?? "—")
+                        </td>
+                        <td class="text-secondary text-uppercase small">
+                            @(a.Laboratorio?.Nombre ?? "—")
+                        </td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn-more-options" title="Opciones">
+                                <i class="bi bi-three-dots fs-5"></i>
+                            </button>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
+
+    <!-- Pie de tabla con conteo dinámico -->
+    <div class="px-4 py-3 bg-light border-top text-muted small" id="pieTablaArticulos">
+        Mostrando <span id="articulosVisibles">@Model.Articulos.Count</span> de @Model.Articulos.Count artículos
+    </div>
+</div>
+
+<!-- Nota informativa inferior -->
+<div class="info-callout mb-4">
+    <i class="bi bi-info-circle text-secondary fs-5"></i>
+    <span>El catálogo define el artículo. Las existencias, los costos y los vencimientos se consultan en Inventario por lotes.</span>
 </div>
 
 <!-- Modal Nuevo Artículo -->
@@ -178,6 +268,61 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const inputTexto = document.getElementById("inputFiltroArticulo");
+            const selectGenerico = document.getElementById("selectFiltroGenerico");
+            const selectLaboratorio = document.getElementById("selectFiltroLaboratorio");
+            const filas = document.querySelectorAll(".articulo-row");
+            const spanVisibles = document.getElementById("articulosVisibles");
+
+            // Si viene una búsqueda desde la barra global (?buscar=...)
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryUrl = urlParams.get('buscar');
+            if (queryUrl) {
+                inputTexto.value = queryUrl;
+            }
+
+            function filtrar() {
+                const query = inputTexto.value.trim().toLowerCase();
+                const genFiltro = selectGenerico.value;
+                const labFiltro = selectLaboratorio.value;
+                let visibles = 0;
+
+                filas.forEach(fila => {
+                    const codigo = fila.getAttribute("data-codigo");
+                    const nombre = fila.getAttribute("data-nombre");
+                    const generico = fila.getAttribute("data-generico");
+                    const laboratorio = fila.getAttribute("data-laboratorio");
+
+                    const coincideTexto = codigo.includes(query) || nombre.includes(query);
+                    const coincideGen = !genFiltro || generico.includes(genFiltro);
+                    const coincideLab = !labFiltro || laboratorio.includes(labFiltro);
+
+                    if (coincideTexto && coincideGen && coincideLab) {
+                        fila.style.display = "";
+                        visibles++;
+                    } else {
+                        fila.style.display = "none";
+                    }
+                });
+
+                if (spanVisibles) {
+                    spanVisibles.textContent = visibles;
+                }
+            }
+
+            inputTexto.addEventListener("input", filtrar);
+            selectGenerico.addEventListener("change", filtrar);
+            selectLaboratorio.addEventListener("change", filtrar);
+
+            // Ejecutar si había valor por defecto o parámetro en URL
+            filtrar();
+        });
+    </script>
+}
 
 @if (ModelState.ErrorCount > 0)
 {

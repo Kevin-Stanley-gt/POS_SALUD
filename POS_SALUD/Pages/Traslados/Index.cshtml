@@ -1,125 +1,307 @@
 @page
 @model POS_SALUD.Pages.Traslados.IndexModel
 @{
-    ViewData["Title"] = "Traslados";
+    ViewData["Title"] = "Traslados entre sucursales";
+    var miSucursalId = int.Parse(User.FindFirst("IdSucursal")?.Value ?? "0");
 }
-<div class="page-header">
-    <h1>Traslados entre sucursales</h1>
+
+<style>
+    :root {
+        --brand-color: #0b5e5c;
+        --brand-hover: #084342;
+    }
+
+    .traslado-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1.5rem 1.75rem;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 0.88rem;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 0.2rem rgba(11, 94, 92, 0.12);
+        }
+
+    .btn-brand-primary {
+        background-color: var(--brand-color);
+        border-color: var(--brand-color);
+        color: #ffffff;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+        .btn-brand-primary:hover {
+            background-color: var(--brand-hover);
+            border-color: var(--brand-hover);
+            color: #ffffff;
+        }
+
+    .btn-trash-line {
+        color: #94a3b8;
+        border: none;
+        background: transparent;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.15s ease-in-out;
+    }
+
+        .btn-trash-line:hover {
+            color: #dc3545;
+            background-color: #fee2e2;
+        }
+
+    .table-custom thead th {
+        background-color: #f8fafc;
+        color: #475569;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-custom tbody td {
+        padding: 0.75rem 1rem;
+        vertical-align: middle;
+        font-size: 0.88rem;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .search-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        max-height: 280px;
+        overflow-y: auto;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+
+    .search-item {
+        padding: 0.6rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+    }
+
+        .search-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-item:hover {
+            background-color: #f8fafc;
+        }
+</style>
+
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-1">Traslados entre sucursales</h2>
+    <p class="text-secondary small mb-0">Prepara un envío y consulta el historial de movimientos.</p>
 </div>
 
 @if (Model.MensajeError is not null)
 {
-    <div class="alert alert-danger">@Model.MensajeError</div>
-}
-@if (Model.MensajeOk is not null)
-{
-    <div class="alert alert-success alert-dismissible fade show">
-        @Model.MensajeOk
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    <div class="alert alert-danger py-2 small d-flex align-items-center gap-2 mb-4" role="alert">
+        <i class="bi bi-x-circle-fill"></i>
+        <div>@Model.MensajeError</div>
     </div>
 }
 
-<div class="card mb-4">
-    <div class="card-header">Nuevo traslado</div>
-    <div class="card-body">
-        <form method="post">
-            <div class="row g-3 mb-3">
-                <div class="col-md-4">
-                    <label asp-for="Input.IdSucursalDestino" class="form-label">Sucursal destino</label>
-                    <select asp-for="Input.IdSucursalDestino" class="form-select">
-                        <option value="">-- Seleccione --</option>
-                        @foreach (var s in Model.Sucursales)
-                        {
-                            <option value="@s.IdSucursal">@s.Nombre</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-8">
-                    <label asp-for="Input.Observaciones" class="form-label">Observaciones</label>
-                    <input asp-for="Input.Observaciones" class="form-control" />
-                </div>
+@if (Model.MensajeOk is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 small d-flex align-items-center justify-content-between mb-4" role="alert">
+        <div>
+            <i class="bi bi-check-circle-fill me-2"></i>
+            @Model.MensajeOk
+        </div>
+        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+}
+
+<!-- Tarjeta: Nuevo Traslado -->
+<div class="traslado-card shadow-sm mb-4">
+    <h5 class="fw-bold text-dark mb-3">Nuevo traslado</h5>
+    <form method="post" id="formTraslado">
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-5">
+                <label asp-for="Input.IdSucursalDestino" class="form-label small fw-semibold text-secondary mb-1">Sucursal destino</label>
+                <select asp-for="Input.IdSucursalDestino" class="form-select py-2" required>
+                    <option value="">Selecciona una sucursal</option>
+                    @foreach (var s in Model.Sucursales)
+                    {
+                        <option value="@s.IdSucursal">@s.Nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-7">
+                <label asp-for="Input.Observaciones" class="form-label small fw-semibold text-secondary mb-1">Observaciones</label>
+                <input asp-for="Input.Observaciones" class="form-control py-2" placeholder="Agrega una nota para la sucursal destino" />
+            </div>
+        </div>
+
+        <!-- Única barra de búsqueda con autocompletado y lista desplegable -->
+        <div class="mb-3 position-relative">
+            <label class="form-label small fw-semibold text-secondary mb-1">Buscar producto o lote</label>
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text"
+                       id="inputBuscarLote"
+                       class="form-control border-start-0 ps-0 py-2"
+                       placeholder="Escribe el nombre del artículo o número de lote para agregarlo..."
+                       autocomplete="off" />
             </div>
 
+            <!-- Desplegable dinámico de resultados -->
+            <div id="dropdownResultados" class="search-dropdown-menu"></div>
+        </div>
+
+        <!-- Tabla acumulativa de Lotes agregados -->
+        <div class="border rounded-3 overflow-hidden mb-4">
             <div class="table-responsive">
-                <table class="table table-sm align-middle">
+                <table class="table table-hover table-custom mb-0" id="tablaLotesAgregados">
                     <thead>
                         <tr>
-                            <th>Lote (artículo / lote / existencia)</th>
-                            <th style="width:140px">Cantidad</th>
+                            <th class="ps-3">Artículo</th>
+                            <th>Lote</th>
+                            <th>Vencimiento</th>
+                            <th class="text-center" style="width: 130px;">Stock disp.</th>
+                            <th class="text-center" style="width: 140px;">Cantidad a enviar</th>
+                            <th class="text-end pe-3" style="width: 60px;"></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @for (var i = 0; i < Model.Input.Lineas.Count; i++)
-                        {
-                            <tr>
-                                <td>
-                                    <select name="Input.Lineas[@i].IdArticuloSucursalLote" class="form-select">
-                                        <option value="">-- Seleccione --</option>
-                                        @foreach (var l in Model.LotesDisponibles)
-                                        {
-                                            <option value="@l.IdArticuloSucursalLote">@l.ArticuloSucursal?.Articulo?.Nombre / @l.Lote / @l.Existencia</option>
-                                        }
-                                    </select>
-                                </td>
-                                <td><input name="Input.Lineas[@i].Cantidad" type="number" min="1" value="1" class="form-control" /></td>
-                            </tr>
-                        }
+                    <tbody id="tbodyLotes">
+                        <tr id="filaVacia">
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-boxes fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                <span class="fw-semibold text-dark">No has agregado lotes al traslado</span>
+                                <div class="small">Utiliza el buscador superior para seleccionar y agregar artículos.</div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">Enviar traslado</button>
+        </div>
+
+        <!-- Contenedor invisible para enviar los datos con el formato de ASP.NET Core -->
+        <div id="hiddenInputsContainer"></div>
+
+        <!-- Botones de Acción -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pt-3 border-top">
+            <span class="text-muted small" id="contadorLotesTexto">0 lote(s) en la lista</span>
+
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-light bg-white border px-4 py-2 text-dark fw-medium rounded-3" id="btnLimpiar">
+                    Limpiar
+                </button>
+                <button type="submit" class="btn btn-brand-primary px-4 py-2 d-inline-flex align-items-center gap-2 rounded-3" id="btnEnviar">
+                    <i class="bi bi-send"></i>
+                    <span>Enviar traslado</span>
+                </button>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 
-<div class="card">
-    <div class="card-header">Historial</div>
+<!-- Tarjeta: Historial de Traslados -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h5 class="fw-bold text-dark mb-0">Historial de traslados</h5>
+    <span class="text-muted small">@(Model.Traslados.Count == 0 ? "Sin movimientos" : $"{Model.Traslados.Count} registrados")</span>
+</div>
+
+<div class="traslado-card shadow-sm p-0 overflow-hidden mb-4">
     <div class="table-responsive">
-        <table class="table table-sm table-hover mb-0">
+        <table class="table table-hover table-custom mb-0">
             <thead>
                 <tr>
-                    <th class="ps-3">#</th>
+                    <th class="ps-4" style="width: 80px;">N.º</th>
                     <th>Origen</th>
                     <th>Destino</th>
-                    <th>Fecha envío</th>
+                    <th>Fecha de envío</th>
                     <th>Estado</th>
-                    <th class="pe-3"></th>
+                    <th class="pe-4 text-end" style="width: 140px;"></th>
                 </tr>
             </thead>
             <tbody>
+                @if (Model.Traslados.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="text-muted my-3">
+                                <div class="rounded-3 bg-light d-inline-flex align-items-center justify-content-center p-3 mb-2 border">
+                                    <i class="bi bi-arrow-left-right fs-4 text-secondary opacity-75"></i>
+                                </div>
+                                <div class="fw-bold text-dark fs-6">Aún no hay traslados</div>
+                                <span class="small">Los envíos entre sucursales aparecerán aquí con su fecha y estado.</span>
+                            </div>
+                        </td>
+                    </tr>
+                }
                 @foreach (var t in Model.Traslados)
                 {
-                    var puedeRecibir = t.Estado == "EN_TRANSITO" && t.IdSucursalDestino == int.Parse(User.FindFirst("IdSucursal")?.Value ?? "0");
+                    var puedeRecibir = t.Estado == "EN_TRANSITO" && t.IdSucursalDestino == miSucursalId;
                     <tr>
-                        <td class="ps-3">@t.IdTraslado</td>
-                        <td>@t.SucursalOrigen?.Nombre</td>
-                        <td>@t.SucursalDestino?.Nombre</td>
-                        <td>@t.FechaEnvio?.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="ps-4 fw-bold text-secondary">#@t.IdTraslado</td>
+                        <td class="fw-semibold text-dark">@(t.SucursalOrigen?.Nombre ?? "—")</td>
+                        <td class="text-secondary">@(t.SucursalDestino?.Nombre ?? "—")</td>
+                        <td class="text-secondary">@(t.FechaEnvio?.ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
                         <td>
-                            <span class="badge @(t.Estado == "RECIBIDO" ? "bg-success" : "bg-warning text-dark")">@t.Estado</span>
+                            @if (t.Estado == "RECIBIDO")
+                            {
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                    <i class="bi bi-check2-circle me-1"></i> RECIBIDO
+                                </span>
+                            }
+                            else if (t.Estado == "EN_TRANSITO")
+                            {
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">
+                                    <i class="bi bi-truck me-1"></i> EN TRÁNSITO
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-secondary border px-2 py-1">@t.Estado</span>
+                            }
                         </td>
-                        <td class="pe-3 text-end">
+                        <td class="pe-4 text-end">
                             @if (puedeRecibir)
                             {
-                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalRecibir@(t.IdTraslado)">Recibir</button>
+                                <button type="button" class="btn btn-sm btn-brand-primary rounded-pill px-3 py-1" data-bs-toggle="modal" data-bs-target="#modalRecibir@(t.IdTraslado)">
+                                    <i class="bi bi-box-arrow-in-down me-1"></i> Recibir
+                                </button>
 
                                 <div class="modal fade" id="modalRecibir@(t.IdTraslado)" tabindex="-1" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title">Recibir traslado #@t.IdTraslado</h5>
+                                        <div class="modal-content border-0 shadow" style="border-radius: 14px;">
+                                            <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
+                                                <h5 class="modal-title fw-bold text-dark">Recibir traslado #@t.IdTraslado</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                                             </div>
-                                            <div class="modal-body text-start">
-                                                Origen: <strong>@t.SucursalOrigen?.Nombre</strong><br />
-                                                ¿Confirma la recepción de la mercadería? Las existencias se sumarán a su sucursal.
+                                            <div class="modal-body p-4 text-start">
+                                                <div class="p-3 bg-light rounded-3 mb-3 border">
+                                                    <span class="small text-secondary">Sucursal de origen:</span>
+                                                    <div class="fw-bold text-dark fs-6">@t.SucursalOrigen?.Nombre</div>
+                                                </div>
+                                                <p class="text-secondary small mb-0">
+                                                    ¿Confirma la recepción de la mercadería? Las existencias físicas se sumarán inmediatamente al inventario de su sucursal.
+                                                </p>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <div class="modal-footer border-top-0 px-4 pb-4">
+                                                <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
                                                 <form method="post" asp-page-handler="Recibir" asp-route-id="@t.IdTraslado" class="d-inline">
-                                                    <button type="submit" class="btn btn-success">Sí, recibir</button>
+                                                    <button type="submit" class="btn btn-brand-primary px-4">Sí, recibir mercadería</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -133,3 +315,187 @@
         </table>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fuente de datos de los lotes de la sucursal actual
+            const lotesDisponibles = [
+                        @foreach (var l in Model.LotesDisponibles)
+                {
+                    <text>{
+                            id: @l.IdArticuloSucursalLote,
+                            nombre: "@(l.ArticuloSucursal?.Articulo?.Nombre ?? "Sin nombre")",
+                            lote: "@(l.Lote ?? "")",
+                            vencimiento: "@l.FechaVencimiento.ToString("dd/MM/yyyy")",
+                            stock: @l.Existencia
+                                    }, </text>
+                            }
+                        ];
+
+                const inputBuscar = document.getElementById("inputBuscarLote");
+                const dropdown = document.getElementById("dropdownResultados");
+                const tbody = document.getElementById("tbodyLotes");
+                const filaVacia = document.getElementById("filaVacia");
+                const hiddenContainer = document.getElementById("hiddenInputsContainer");
+                const form = document.getElementById("formTraslado");
+                const contadorTexto = document.getElementById("contadorLotesTexto");
+
+                let lotesSeleccionados = [];
+
+                // Búsqueda en vivo al teclear
+                inputBuscar.addEventListener("input", function () {
+                    const term = inputBuscar.value.trim().toLowerCase();
+                    if (term.length === 0) {
+                        dropdown.style.display = "none";
+                        dropdown.innerHTML = "";
+                        return;
+                    }
+
+                    const filtrados = lotesDisponibles.filter(l =>
+                        l.nombre.toLowerCase().includes(term) || l.lote.toLowerCase().includes(term)
+                    );
+
+                    if (filtrados.length === 0) {
+                        dropdown.innerHTML = `<div class="p-3 text-center text-muted small">No se encontraron lotes para "${escapeHtml(term)}"</div>`;
+                    } else {
+                        dropdown.innerHTML = filtrados.map(l => `
+                                    <div class="search-item d-flex justify-content-between align-items-center" data-id="${l.id}">
+                                        <div>
+                                            <span class="fw-semibold text-dark">${l.nombre}</span>
+                                            <div class="text-muted small">Lote: <strong>${l.lote}</strong> | Vence: ${l.vencimiento}</div>
+                                        </div>
+                                        <span class="badge bg-light text-dark border">Stock: ${l.stock}</span>
+                                    </div>
+                                `).join("");
+                    }
+                    dropdown.style.display = "block";
+                });
+
+                // Selección de un lote del desplegable
+                dropdown.addEventListener("click", function (e) {
+                    const item = e.target.closest(".search-item");
+                    if (!item) return;
+
+                    const id = parseInt(item.getAttribute("data-id"));
+                    const loteEncontrado = lotesDisponibles.find(l => l.id === id);
+
+                    if (loteEncontrado) {
+                        const existente = lotesSeleccionados.find(l => l.id === id);
+                        if (existente) {
+                            if (existente.cantidad < existente.stock) {
+                                existente.cantidad++;
+                            }
+                        } else {
+                            lotesSeleccionados.push({
+                                id: loteEncontrado.id,
+                                nombre: loteEncontrado.nombre,
+                                lote: loteEncontrado.lote,
+                                vencimiento: loteEncontrado.vencimiento,
+                                stock: loteEncontrado.stock,
+                                cantidad: 1
+                            });
+                        }
+                        renderizarTabla();
+                    }
+
+                    inputBuscar.value = "";
+                    dropdown.style.display = "none";
+                    dropdown.innerHTML = "";
+                });
+
+                // Cerrar el menú si se hace clic fuera
+                document.addEventListener("click", function (e) {
+                    if (!inputBuscar.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.style.display = "none";
+                    }
+                });
+
+                function renderizarTabla() {
+                    if (lotesSeleccionados.length === 0) {
+                        tbody.innerHTML = "";
+                        tbody.appendChild(filaVacia);
+                        contadorTexto.textContent = "0 lote(s) en la lista";
+                        return;
+                    }
+
+                    tbody.innerHTML = lotesSeleccionados.map((item, index) => `
+                                <tr>
+                                    <td class="ps-3 fw-semibold text-dark">${item.nombre}</td>
+                                    <td class="font-monospace text-secondary">${item.lote}</td>
+                                    <td class="text-secondary">${item.vencimiento}</td>
+                                    <td class="text-center text-muted fw-bold">${item.stock}</td>
+                                    <td class="text-center">
+                                        <input type="number"
+                                               class="form-control form-control-sm text-center mx-auto input-cant-item"
+                                               style="max-width: 90px;"
+                                               min="1"
+                                               max="${item.stock}"
+                                               value="${item.cantidad}"
+                                               data-index="${index}" />
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <button type="button" class="btn-trash-line btn-quitar" data-index="${index}" title="Quitar">
+                                            <i class="bi bi-trash fs-5 pointer-events-none"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join("");
+
+                    contadorTexto.textContent = `${lotesSeleccionados.length} lote(s) en la lista`;
+                }
+
+                // Cambiar cantidad directamente en la fila
+                tbody.addEventListener("input", function (e) {
+                    if (e.target.classList.contains("input-cant-item")) {
+                        const idx = parseInt(e.target.getAttribute("data-index"));
+                        let val = parseInt(e.target.value) || 1;
+                        if (val < 1) val = 1;
+                        if (val > lotesSeleccionados[idx].stock) {
+                            val = lotesSeleccionados[idx].stock;
+                            e.target.value = val;
+                        }
+                        lotesSeleccionados[idx].cantidad = val;
+                    }
+                });
+
+                // Eliminar fila
+                tbody.addEventListener("click", function (e) {
+                    const btn = e.target.closest(".btn-quitar");
+                    if (btn) {
+                        const idx = parseInt(btn.getAttribute("data-index"));
+                        lotesSeleccionados.splice(idx, 1);
+                        renderizarTabla();
+                    }
+                });
+
+                // Botón Limpiar
+                document.getElementById("btnLimpiar").addEventListener("click", function () {
+                    form.reset();
+                    lotesSeleccionados = [];
+                    renderizarTabla();
+                });
+
+                // Antes de enviar el form, generar los inputs ocultos para Razor Model Binding
+                form.addEventListener("submit", function (e) {
+                    if (lotesSeleccionados.length === 0) {
+                        e.preventDefault();
+                        alert("Debes agregar al menos un lote a la lista para enviar el traslado.");
+                        return;
+                    }
+
+                    hiddenContainer.innerHTML = "";
+                    lotesSeleccionados.forEach((item, i) => {
+                        hiddenContainer.innerHTML += `
+                                    <input type="hidden" name="Input.Lineas[${i}].IdArticuloSucursalLote" value="${item.id}" />
+                                    <input type="hidden" name="Input.Lineas[${i}].Cantidad" value="${item.cantidad}" />
+                                `;
+                    });
+                });
+
+                function escapeHtml(text) {
+                    return text.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+                }
+            });
+        </script>
+    }

@@ -1,42 +1,235 @@
 @page
 @model POS_SALUD.Pages.Inventario.IndexModel
 @{
-    ViewData["Title"] = "Inventario";
+    ViewData["Title"] = "Inventario por lotes";
 }
-<div class="page-header">
-    <h1>Inventario por lotes</h1>
-</div>
-<div class="card">
-<div class="table-responsive">
-<table class="table table-sm table-hover mb-0">
-    <thead>
-        <tr>
-            <th class="ps-3">Artículo</th>
-            <th>Lote</th>
-            <th>Vencimiento</th>
-            <th class="text-end">Costo</th>
-            <th class="text-end pe-3">Existencia</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var l in Model.Lotes)
-        {
-            var vencido = l.FechaVencimiento < DateOnly.FromDateTime(DateTime.Today);
-            <tr class="@(vencido ? "table-danger" : "")">
-                <td class="ps-3">@l.ArticuloSucursal?.Articulo?.Nombre</td>
-                <td>@l.Lote</td>
-                <td>
-                    @l.FechaVencimiento.ToString("dd/MM/yyyy")
-                    @if (vencido)
-                    {
-                        <span class="badge bg-danger ms-1">Vencido</span>
-                    }
-                </td>
-                <td class="text-end">@l.CostoUnitario.ToString("N2")</td>
-                <td class="text-end pe-3">@l.Existencia</td>
-            </tr>
+
+<style>
+    :root {
+        --brand-color: #0b5e5c;
+        --brand-hover: #084342;
+    }
+
+    .inv-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-inv thead th {
+        background-color: #ffffff;
+        color: #475569;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.9rem 1.25rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-inv tbody td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        font-size: 0.88rem;
+        color: #1e293b;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table-inv tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .filter-input {
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 0.9rem;
+    }
+
+        .filter-input:focus {
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 0.2rem rgba(11, 94, 92, 0.12);
         }
-    </tbody>
-</table>
+
+    .info-callout {
+        background-color: #e6f3f2;
+        border: 1px solid #c2e2e0;
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+    }
+</style>
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Inventario por lotes</h2>
+        <p class="text-secondary small mb-0">Consulta los lotes de tus artículos y sus fechas de vencimiento.</p>
+    </div>
+    <div>
+        <button type="button" class="btn btn-outline-secondary bg-white d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm fw-medium text-dark" onclick="window.location.reload();">
+            <i class="bi bi-arrow-clockwise fs-5"></i>
+            <span>Actualizar</span>
+        </button>
+    </div>
 </div>
+
+<!-- Barra de filtros -->
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-8">
+        <label class="form-label small fw-semibold text-secondary mb-1">Artículo o lote</label>
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text"
+                   id="inputFiltroTexto"
+                   class="form-control border-start-0 filter-input ps-0"
+                   placeholder="Buscar por nombre de artículo o número de lote..."
+                   autocomplete="off" />
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <label class="form-label small fw-semibold text-secondary mb-1">Vencimiento</label>
+        <select id="selectFiltroVencimiento" class="form-select filter-input">
+            <option value="todos">Todos los vencimientos</option>
+            <option value="vigentes">Solo vigentes</option>
+            <option value="vencidos">Solo vencidos</option>
+            <option value="proximos">Próximos a vencer (60 días)</option>
+        </select>
+    </div>
 </div>
+
+<!-- Encabezado de lista -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="fw-bold text-dark mb-0">Lotes disponibles</h6>
+    <span class="text-muted small" id="contadorLotes">@Model.Lotes.Count lotes</span>
+</div>
+
+<!-- Tabla de Lotes -->
+<div class="inv-card shadow-sm mb-4">
+    <div class="table-responsive">
+        <table class="table table-hover table-inv mb-0" id="tablaLotes">
+            <thead>
+                <tr>
+                    <th style="min-width: 250px;">Artículo</th>
+                    <th style="min-width: 140px;">Lote</th>
+                    <th style="min-width: 140px;">Vencimiento</th>
+                    <th class="text-end" style="min-width: 120px;">Costo unitario</th>
+                    <th class="text-end pe-4" style="min-width: 110px;">Existencia</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Lotes.Count == 0)
+                {
+                    <tr id="filaSinLotes">
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <i class="bi bi-boxes fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                            No hay lotes con existencia registrados en el inventario.
+                        </td>
+                    </tr>
+                }
+                @foreach (var l in Model.Lotes)
+                {
+                    var hoy = DateOnly.FromDateTime(DateTime.Today);
+                    var vencido = l.FechaVencimiento < hoy;
+                    var proximoAVencer = !vencido && l.FechaVencimiento <= hoy.AddDays(60);
+
+                    <tr class="lote-row @(vencido ? "table-danger-subtle" : "")"
+                        data-articulo="@(l.ArticuloSucursal?.Articulo?.Nombre?.ToLowerInvariant() ?? "")"
+                        data-lote="@(l.Lote?.ToLowerInvariant() ?? "")"
+                        data-vencido="@(vencido ? "true" : "false")"
+                        data-proximo="@(proximoAVencer ? "true" : "false")">
+                        <td class="fw-semibold text-dark">
+                            @(l.ArticuloSucursal?.Articulo?.Nombre ?? "Artículo no especificado")
+                        </td>
+                        <td class="font-monospace text-secondary">
+                            @l.Lote
+                        </td>
+                        <td>
+                            <span>@l.FechaVencimiento.ToString("dd/MM/yyyy")</span>
+                            @if (vencido)
+                            {
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-2 px-2 py-1">Vencido</span>
+                            }
+                            else if (proximoAVencer)
+                            {
+                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-2 px-2 py-1">Por vencer</span>
+                            }
+                        </td>
+                        <td class="text-end text-secondary">
+                            Q @l.CostoUnitario.ToString("N2")
+                        </td>
+                        <td class="text-end pe-4 fw-bold text-dark">
+                            @l.Existencia
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pie de tabla -->
+    <div class="px-4 py-3 bg-light border-top text-muted small" id="pieTablaLotes">
+        Mostrando <span id="lotesVisibles">@Model.Lotes.Count</span> de @Model.Lotes.Count lotes
+    </div>
+</div>
+
+<!-- Tarjeta de Ayuda / Info -->
+<div class="info-callout shadow-sm d-flex align-items-center gap-3">
+    <div class="rounded-circle d-flex align-items-center justify-content-center text-primary" style="color: var(--brand-color) !important; font-size: 1.4rem;">
+        <i class="bi bi-info-circle"></i>
+    </div>
+    <div>
+        <div class="fw-bold text-dark small">Cada lote se consulta por separado</div>
+        <div class="text-secondary small">
+            Usa el número de lote para identificar una entrada específica o filtra por vencimiento para planificar la revisión del inventario.
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const inputTexto = document.getElementById("inputFiltroTexto");
+            const selectVencimiento = document.getElementById("selectFiltroVencimiento");
+            const filas = document.querySelectorAll(".lote-row");
+            const spanVisibles = document.getElementById("lotesVisibles");
+            const totalLotes = @Model.Lotes.Count;
+
+            function filtrar() {
+                const query = inputTexto.value.trim().toLowerCase();
+                const filtroVence = selectVencimiento.value;
+                let visibles = 0;
+
+                filas.forEach(fila => {
+                    const articulo = fila.getAttribute("data-articulo");
+                    const lote = fila.getAttribute("data-lote");
+                    const esVencido = fila.getAttribute("data-vencido") === "true";
+                    const esProximo = fila.getAttribute("data-proximo") === "true";
+
+                    const coincideTexto = articulo.includes(query) || lote.includes(query);
+
+                    let coincideVencimiento = true;
+                    if (filtroVence === "vigentes") {
+                        coincideVencimiento = !esVencido;
+                    } else if (filtroVence === "vencidos") {
+                        coincideVencimiento = esVencido;
+                    } else if (filtroVence === "proximos") {
+                        coincideVencimiento = esProximo;
+                    }
+
+                    if (coincideTexto && coincideVencimiento) {
+                        fila.style.display = "";
+                        visibles++;
+                    } else {
+                        fila.style.display = "none";
+                    }
+                });
+
+                if (spanVisibles) {
+                    spanVisibles.textContent = visibles;
+                }
+            }
+
+            inputTexto.addEventListener("input", filtrar);
+            selectVencimiento.addEventListener("change", filtrar);
+        });
+    </script>
+}
