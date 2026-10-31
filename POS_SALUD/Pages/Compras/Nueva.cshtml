@@ -15,49 +15,18 @@
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 14px;
-        padding: 1.5rem 1.75rem;
+        padding: 1.5rem;
     }
 
-    .table-compras thead th {
-        background-color: #ffffff;
-        color: #475569;
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 0.75rem 0.5rem;
-        border-bottom: 1px solid #e2e8f0;
-    }
-
-    .table-compras tbody td {
-        padding: 0.6rem 0.5rem;
-        vertical-align: middle;
-        border-bottom: none;
-    }
-
-    .table-compras .form-control,
-    .table-compras .form-select {
-        font-size: 0.88rem;
+    .form-control, .form-select {
         border-radius: 8px;
-        border-color: #cbd5e1;
+        border: 1px solid #cbd5e1;
+        font-size: 0.88rem;
     }
 
-        .table-compras .form-control:focus,
-        .table-compras .form-select:focus {
+        .form-control:focus, .form-select:focus {
             border-color: var(--brand-color);
             box-shadow: 0 0 0 0.2rem rgba(11, 94, 92, 0.12);
-        }
-
-    .btn-trash-line {
-        color: #94a3b8;
-        border: none;
-        background: transparent;
-        padding: 6px;
-        border-radius: 6px;
-        transition: all 0.15s ease-in-out;
-    }
-
-        .btn-trash-line:hover {
-            color: #dc3545;
-            background-color: #fee2e2;
         }
 
     .btn-brand-primary {
@@ -74,11 +43,78 @@
             color: #ffffff;
         }
 
-    .total-estimado-val {
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: #0f172a;
+    .total-box-card {
+        background-color: var(--brand-color);
+        color: #ffffff;
+        border-radius: 14px;
+        padding: 1.5rem;
     }
+
+    .total-box-amount {
+        font-size: 2.25rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .search-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        max-height: 280px;
+        overflow-y: auto;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        display: none;
+    }
+
+    .search-item {
+        padding: 0.65rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+    }
+
+        .search-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-item:hover {
+            background-color: #f8fafc;
+        }
+
+    .table-compras thead th {
+        background-color: #f8fafc;
+        color: #475569;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.75rem 0.75rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-compras tbody td {
+        padding: 0.75rem 0.5rem;
+        vertical-align: middle;
+        font-size: 0.88rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .btn-trash-line {
+        color: #94a3b8;
+        border: none;
+        background: transparent;
+        padding: 4px 6px;
+        border-radius: 6px;
+        transition: all 0.15s ease-in-out;
+    }
+
+        .btn-trash-line:hover {
+            color: #dc3545;
+            background-color: #fee2e2;
+        }
 </style>
 
 <div class="mb-4">
@@ -106,170 +142,150 @@
 }
 
 <form method="post" id="formCompra">
-    <!-- Datos del Documento -->
-    <div class="compra-card shadow-sm mb-4">
-        <h5 class="fw-bold text-dark mb-3">Datos del documento</h5>
-        <div class="row g-3">
-            <div class="col-12 col-md-3">
-                <label asp-for="Input.IdTipoDocumento" class="form-label small fw-semibold text-secondary mb-1">Tipo de documento</label>
-                <select asp-for="Input.IdTipoDocumento" class="form-select" asp-items="@(new SelectList(Model.TiposDocumento, nameof(POS_SALUD.Data.Entities.TipoDocumento.IdTipoDocumento), nameof(POS_SALUD.Data.Entities.TipoDocumento.Nombre)))"></select>
+    <div class="row g-4">
+        <!-- COLUMNA PRINCIPAL (70%) -->
+        <div class="col-12 col-lg-8">
+            <!-- Datos del Documento -->
+            <div class="compra-card shadow-sm mb-4">
+                <h6 class="fw-bold text-dark mb-3">Datos del documento</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-3">
+                        <label asp-for="Input.IdTipoDocumento" class="form-label small fw-semibold text-secondary mb-1">Tipo doc.</label>
+                        <select asp-for="Input.IdTipoDocumento" class="form-select py-2" asp-items="@(new SelectList(Model.TiposDocumento, nameof(POS_SALUD.Data.Entities.TipoDocumento.IdTipoDocumento), nameof(POS_SALUD.Data.Entities.TipoDocumento.Nombre)))"></select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label asp-for="Input.IdProveedor" class="form-label small fw-semibold text-secondary mb-1">Proveedor</label>
+                        <select asp-for="Input.IdProveedor" class="form-select py-2" asp-items="@(new SelectList(Model.Proveedores, nameof(POS_SALUD.Data.Entities.Proveedor.IdProveedor), nameof(POS_SALUD.Data.Entities.Proveedor.RazonSocial)))"></select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label asp-for="Input.NumeroDocumento" class="form-label small fw-semibold text-secondary mb-1">N.º Documento</label>
+                        <input asp-for="Input.NumeroDocumento" class="form-control py-2" placeholder="Ej. FC-12345" required />
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label asp-for="Input.Observaciones" class="form-label small fw-semibold text-secondary mb-1">Observaciones</label>
+                        <input asp-for="Input.Observaciones" class="form-control py-2" placeholder="Opcional..." />
+                    </div>
+                </div>
             </div>
-            <div class="col-12 col-md-3">
-                <label asp-for="Input.IdProveedor" class="form-label small fw-semibold text-secondary mb-1">Proveedor</label>
-                <select asp-for="Input.IdProveedor" class="form-select" asp-items="@(new SelectList(Model.Proveedores, nameof(POS_SALUD.Data.Entities.Proveedor.IdProveedor), nameof(POS_SALUD.Data.Entities.Proveedor.RazonSocial)))"></select>
+
+            <!-- Detalle de la Compra con Buscador -->
+            <div class="compra-card shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">Artículos a ingresar</h6>
+                        <span class="text-secondary small">Busca el medicamento para registrar su lote y costo</span>
+                    </div>
+                    <span class="text-muted small" id="contadorLineasTexto">0 artículo(s)</span>
+                </div>
+
+                <!-- Buscador de Artículos -->
+                <div class="mb-3 position-relative">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text"
+                               id="inputBuscarArticulo"
+                               class="form-control border-start-0 ps-0 py-2"
+                               placeholder="Buscar artículo por nombre o código para agregar..."
+                               autocomplete="off" />
+                        <button type="button" class="btn btn-outline-secondary px-3" id="btnBuscarArticulo">
+                            Buscar
+                        </button>
+                    </div>
+
+                    <!-- Desplegable dinámico de artículos -->
+                    <div id="dropdownResultadosArticulos" class="search-dropdown-menu"></div>
+                </div>
+
+                <!-- Tabla de Artículos Agregados -->
+                <div class="border rounded-3 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-compras mb-0" id="tablaLineasCompra">
+                            <thead>
+                                <tr>
+                                    <th class="ps-3" style="min-width: 200px;">Artículo</th>
+                                    <th style="min-width: 130px;">Lote</th>
+                                    <th style="min-width: 135px;">Vencimiento</th>
+                                    <th class="text-end" style="width: 110px;">Costo U.</th>
+                                    <th class="text-center" style="width: 85px;">Cant.</th>
+                                    <th class="text-end" style="width: 95px;">Subtotal</th>
+                                    <th class="text-end pe-3" style="width: 45px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyLineas">
+                                <tr id="filaVaciaCompra">
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <div class="py-3">
+                                            <i class="bi bi-box-seam fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                            <span class="fw-semibold text-dark fs-6">Aún no hay artículos en la compra</span>
+                                            <div class="small">Utiliza el buscador superior para seleccionar y agregar productos al documento.</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Contenedor invisible para enviar el Model Binding a ASP.NET Core -->
+                <div id="hiddenInputsCompra"></div>
             </div>
-            <div class="col-12 col-md-3">
-                <label asp-for="Input.NumeroDocumento" class="form-label small fw-semibold text-secondary mb-1">Número de documento</label>
-                <input asp-for="Input.NumeroDocumento" class="form-control" placeholder="Ingresa el número" />
+        </div>
+
+        <!-- COLUMNA LATERAL (30% - Resumen estilo POS) -->
+        <div class="col-12 col-lg-4">
+            <!-- Tarjeta Total Esmeralda -->
+            <div class="total-box-card shadow-sm mb-4">
+                <span class="text-white-50 small fw-bold text-uppercase">Total de la compra</span>
+                <div class="total-box-amount mt-1 mb-2">Q <span id="lblTotalCompra">0.00</span></div>
+                <div class="text-white-50 small" id="lblSubtotalDetalle">0 artículos agregados</div>
             </div>
-            <div class="col-12 col-md-3">
-                <label asp-for="Input.Observaciones" class="form-label small fw-semibold text-secondary mb-1">Observaciones</label>
-                <input asp-for="Input.Observaciones" class="form-control" placeholder="Nota opcional sobre la compra" />
+
+            <!-- Tarjeta Resumen y Acciones -->
+            <div class="compra-card shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-secondary small">Artículos distintos:</span>
+                    <span class="fw-bold text-dark" id="lblArticulosDistintos">0</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="text-secondary small">Unidades totales:</span>
+                    <span class="fw-bold text-dark" id="lblUnidadesTotales">0</span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-brand-primary py-2 d-inline-flex align-items-center justify-content-center gap-2" id="btnAbrirModalConfirmar">
+                        <i class="bi bi-check2-circle fs-5"></i>
+                        <span>Registrar compra</span>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary py-2" id="btnLimpiarCompra">
+                        Cancelar / Limpiar
+                    </button>
+                </div>
+
+                <div class="text-muted text-center small mt-3">
+                    Revisa las cantidades y costos antes de asentar el documento.
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Detalle de la Compra -->
-    <div class="compra-card shadow-sm mb-4">
-        <h5 class="fw-bold text-dark mb-1">Detalle de la compra</h5>
-        <p class="text-secondary small mb-3">Completa el lote, vencimiento, costo unitario y cantidad de cada artículo.</p>
-
-        <div class="table-responsive">
-            <table class="table table-compras mb-0">
-                <thead>
-                    <tr>
-                        <th style="min-width: 280px;">Artículo</th>
-                        <th style="width: 170px;">Lote</th>
-                        <th style="width: 160px;">Vencimiento</th>
-                        <th style="width: 130px;">Costo unitario</th>
-                        <th style="width: 100px;">Cantidad</th>
-                        <th style="width: 45px;"></th>
-                    </tr>
-                </thead>
-                <tbody id="lineasCompra">
-                    @if (Model.Input.Lineas.Count > 0)
-                    {
-                        for (var i = 0; i < Model.Input.Lineas.Count; i++)
-                        {
-                            <tr class="line-row">
-                                <td>
-                                    <select name="Input.Lineas[@i].IdArticulo" class="form-select">
-                                        <option value="">Seleccionar artículo</option>
-                                        @foreach (var a in Model.Articulos)
-                                        {
-                                            <option value="@a.IdArticulo">@a.Nombre</option>
-                                        }
-                                    </select>
-                                </td>
-                                <td><input name="Input.Lineas[@i].Lote" class="form-control" placeholder="Número de lote" /></td>
-                                <td><input name="Input.Lineas[@i].FechaVencimiento" type="date" class="form-control" /></td>
-                                <td><input name="Input.Lineas[@i].CostoUnitario" type="number" step="0.01" min="0" class="form-control linea-costo" placeholder="0.00" /></td>
-                                <td><input name="Input.Lineas[@i].Cantidad" type="number" min="1" value="1" class="form-control linea-cantidad" /></td>
-                                <td class="text-center">
-                                    <button type="button" class="btn-trash-line btn-remove-line" title="Eliminar fila">
-                                        <i class="bi bi-trash fs-5 pointer-events-none"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <!-- Filas iniciales por defecto como en el mock -->
-                        @for (var i = 0; i < 3; i++)
-                        {
-                            <tr class="line-row">
-                                <td>
-                                    <select name="Input.Lineas[@i].IdArticulo" class="form-select">
-                                        <option value="">Seleccionar artículo</option>
-                                        @foreach (var a in Model.Articulos)
-                                        {
-                                            <option value="@a.IdArticulo">@a.Nombre</option>
-                                        }
-                                    </select>
-                                </td>
-                                <td><input name="Input.Lineas[@i].Lote" class="form-control" placeholder="Número de lote" /></td>
-                                <td><input name="Input.Lineas[@i].FechaVencimiento" type="date" class="form-control" /></td>
-                                <td><input name="Input.Lineas[@i].CostoUnitario" type="number" step="0.01" min="0" class="form-control linea-costo" placeholder="0.00" /></td>
-                                <td><input name="Input.Lineas[@i].Cantidad" type="number" min="1" value="1" class="form-control linea-cantidad" /></td>
-                                <td class="text-center">
-                                    <button type="button" class="btn-trash-line btn-remove-line" title="Eliminar fila">
-                                        <i class="bi bi-trash fs-5 pointer-events-none"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Botón agregar y leyenda -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pt-3 mt-2 border-top">
-            <button type="button" class="btn btn-outline-secondary btn-sm px-3 py-2 rounded-3 d-inline-flex align-items-center gap-2 fw-medium" id="btnAgregarLinea">
-                <i class="bi bi-plus-lg"></i>
-                <span>Agregar fila</span>
-            </button>
-            <span class="text-muted small">Solo se guardarán las filas con un artículo seleccionado.</span>
-        </div>
-
-        <!-- Total estimado -->
-        <div class="d-flex justify-content-between align-items-center pt-4 mt-3 border-top">
-            <span class="fw-semibold text-dark fs-5">Total estimado</span>
-            <div class="total-estimado-val">Q <span id="totalCompra">0.00</span></div>
-        </div>
-    </div>
-
-    <!-- Barra de acciones inferior -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-5">
-        <span class="text-muted small">Revisa el documento y el detalle antes de registrar la compra.</span>
-        <div class="d-flex align-items-center gap-2">
-            <a asp-page="/Index" class="btn btn-light bg-white border px-4 py-2 text-dark fw-medium rounded-3">Cancelar</a>
-            <button type="button" class="btn btn-brand-primary px-4 py-2 d-inline-flex align-items-center gap-2 rounded-3" data-bs-toggle="modal" data-bs-target="#modalConfirmarCompra">
-                <i class="bi bi-check-lg"></i>
-                <span>Registrar compra</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- Plantilla oculta para añadir filas con JS -->
-    <template id="plantillaLineaCompra">
-        <tr class="line-row">
-            <td>
-                <select class="form-select" data-name="Input.Lineas[__i__].IdArticulo">
-                    <option value="">Seleccionar artículo</option>
-                    @foreach (var a in Model.Articulos)
-                    {
-                        <option value="@a.IdArticulo">@a.Nombre</option>
-                    }
-                </select>
-            </td>
-            <td><input class="form-control" data-name="Input.Lineas[__i__].Lote" placeholder="Número de lote" /></td>
-            <td><input type="date" class="form-control" data-name="Input.Lineas[__i__].FechaVencimiento" /></td>
-            <td><input type="number" step="0.01" min="0" class="form-control linea-costo" data-name="Input.Lineas[__i__].CostoUnitario" placeholder="0.00" /></td>
-            <td><input type="number" min="1" value="1" class="form-control linea-cantidad" data-name="Input.Lineas[__i__].Cantidad" /></td>
-            <td class="text-center">
-                <button type="button" class="btn-trash-line btn-remove-line" title="Eliminar fila">
-                    <i class="bi bi-trash fs-5 pointer-events-none"></i>
-                </button>
-            </td>
-        </tr>
-    </template>
 
     <!-- Modal Confirmación -->
-    <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-labelledby="modalConfirmarCompraLabel" aria-hidden="true">
+    <div class="modal fade" id="modalConfirmarCompra" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow" style="border-radius: 14px;">
                 <div class="modal-header border-bottom-0 pb-0 px-4 pt-4">
-                    <h5 class="modal-title fw-bold text-dark" id="modalConfirmarCompraLabel">Confirmar compra</h5>
+                    <h5 class="modal-title fw-bold text-dark">Confirmar compra</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-secondary mb-0">¿Desea registrar esta compra? Los lotes ingresados se sumarán al inventario activo de la sucursal.</p>
+                    <p class="text-secondary mb-0">
+                        ¿Desea registrar esta compra? Los lotes ingresados se integrarán automáticamente al inventario activo de tu sucursal.
+                    </p>
                 </div>
                 <div class="modal-footer border-top-0 px-4 pb-4">
                     <button type="button" class="btn btn-outline-secondary px-3" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-brand-primary px-4">Sí, registrar</button>
+                    <button type="submit" class="btn btn-brand-primary px-4" id="btnConfirmarSubmit">Sí, registrar compra</button>
                 </div>
             </div>
         </div>
@@ -278,61 +294,267 @@
 
 @section Scripts {
     <script>
-        (function () {
-            var tbody = document.getElementById('lineasCompra');
-            var plantilla = document.getElementById('plantillaLineaCompra');
-            var btnAgregar = document.getElementById('btnAgregarLinea');
-            var totalEl = document.getElementById('totalCompra');
+        document.addEventListener("DOMContentLoaded", function () {
+            // Catálogo disponible enviado por el backend
+            const catalogoArticulos = [
+                        @foreach (var a in Model.Articulos)
+                {
+                    <text>{
+                            id: @a.IdArticulo,
+                            nombre: "@Html.Raw(a.Nombre.Replace("\"", "\\\""))",
+                            codigo: "@(a.CodigoBarras ?? "")",
+                            costoBase: @(a.PrecioBase > 0 ? a.PrecioBase : 0)
+                                    }, </text>
+                            }
+                        ];
 
-            function reindexar() {
-                tbody.querySelectorAll('tr.line-row').forEach(function (fila, i) {
-                    fila.querySelectorAll('select, input').forEach(function (el) {
-                        el.name = el.name.replace(/Input\.Lineas\[\d+\]/, 'Input.Lineas[' + i + ']');
-                    });
-                });
-            }
+                const inputBuscar = document.getElementById("inputBuscarArticulo");
+                const btnBuscar = document.getElementById("btnBuscarArticulo");
+                const dropdown = document.getElementById("dropdownResultadosArticulos");
+                const tbody = document.getElementById("tbodyLineas");
+                const filaVacia = document.getElementById("filaVaciaCompra");
+                const hiddenContainer = document.getElementById("hiddenInputsCompra");
+                const form = document.getElementById("formCompra");
 
-            function recalcular() {
-                var total = 0;
-                tbody.querySelectorAll('tr.line-row').forEach(function (fila) {
-                    var costo = parseFloat(fila.querySelector('.linea-costo').value) || 0;
-                    var cant = parseFloat(fila.querySelector('.linea-cantidad').value) || 0;
-                    total += (costo * cant);
-                });
-                totalEl.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
+                const lblTotal = document.getElementById("lblTotalCompra");
+                const lblSubtotalDetalle = document.getElementById("lblSubtotalDetalle");
+                const lblArticulosDistintos = document.getElementById("lblArticulosDistintos");
+                const lblUnidadesTotales = document.getElementById("lblUnidadesTotales");
+                const contadorLineasTexto = document.getElementById("contadorLineasTexto");
 
-            btnAgregar.addEventListener('click', function () {
-                var fila = plantilla.content.firstElementChild.cloneNode(true);
-                fila.querySelectorAll('[data-name]').forEach(function (el) {
-                    el.name = el.getAttribute('data-name');
-                    el.removeAttribute('data-name');
-                });
-                tbody.appendChild(fila);
-                reindexar();
-                recalcular();
-            });
+                let lineas = [];
 
-            tbody.addEventListener('click', function (e) {
-                var btn = e.target.closest('.btn-remove-line');
-                if (!btn) return;
+                // Buscar al teclear
+                function ejecutarBusqueda() {
+                    const term = inputBuscar.value.trim().toLowerCase();
+                    if (term.length === 0) {
+                        dropdown.style.display = "none";
+                        dropdown.innerHTML = "";
+                        return;
+                    }
 
-                var filas = tbody.querySelectorAll('tr.line-row');
-                if (filas.length > 1) {
-                    btn.closest('tr').remove();
-                } else {
-                    filas[0].querySelectorAll('input').forEach(function (el) {
-                        el.value = el.classList.contains('linea-cantidad') ? 1 : '';
-                    });
-                    filas[0].querySelector('select').selectedIndex = 0;
+                    const filtrados = catalogoArticulos.filter(a =>
+                        a.nombre.toLowerCase().includes(term) || a.codigo.toLowerCase().includes(term)
+                    );
+
+                    if (filtrados.length === 0) {
+                        dropdown.innerHTML = `<div class="p-3 text-center text-muted small">No se encontró ningún artículo para "${escapeHtml(term)}"</div>`;
+                    } else {
+                        dropdown.innerHTML = filtrados.map(a => `
+                                    <div class="search-item d-flex justify-content-between align-items-center" data-id="${a.id}">
+                                        <div>
+                                            <span class="fw-semibold text-dark">${a.nombre}</span>
+                                            <div class="text-muted small">Código: <strong>${a.codigo || "Sin código"}</strong></div>
+                                        </div>
+                                        <span class="badge bg-light text-dark border">Q ${a.costoBase.toFixed(2)}</span>
+                                    </div>
+                                `).join("");
+                    }
+                    dropdown.style.display = "block";
                 }
-                reindexar();
-                recalcular();
-            });
 
-            tbody.addEventListener('input', recalcular);
-            tbody.addEventListener('change', recalcular);
-            recalcular();
-        })();
-    </script>
-}
+                inputBuscar.addEventListener("input", ejecutarBusqueda);
+                btnBuscar.addEventListener("click", ejecutarBusqueda);
+
+                // Seleccionar producto del dropdown
+                dropdown.addEventListener("click", function (e) {
+                    const item = e.target.closest(".search-item");
+                    if (!item) return;
+
+                    const id = parseInt(item.getAttribute("data-id"));
+                    const art = catalogoArticulos.find(a => a.id === id);
+
+                    if (art) {
+                        // Generar fecha sugerida de 2 años adelante
+                        const fechaDefault = new Date();
+                        fechaDefault.setFullYear(fechaDefault.getFullYear() + 2);
+                        const fechaStr = fechaDefault.toISOString().split('T')[0];
+
+                        lineas.push({
+                            idArticulo: art.id,
+                            nombre: art.nombre,
+                            lote: "",
+                            vencimiento: fechaStr,
+                            costo: art.costoBase,
+                            cantidad: 1
+                        });
+                        renderizarTabla();
+                    }
+
+                    inputBuscar.value = "";
+                    dropdown.style.display = "none";
+                    dropdown.innerHTML = "";
+                });
+
+                // Cerrar menú al hacer click afuera
+                document.addEventListener("click", function (e) {
+                    if (!inputBuscar.contains(e.target) && !dropdown.contains(e.target)) {
+                        dropdown.style.display = "none";
+                    }
+                });
+
+                function renderizarTabla() {
+                    if (lineas.length === 0) {
+                        tbody.innerHTML = "";
+                        tbody.appendChild(filaVacia);
+                        contadorLineasTexto.textContent = "0 artículo(s)";
+                        actualizarResumen();
+                        return;
+                    }
+
+                    tbody.innerHTML = lineas.map((item, index) => {
+                        const subtotal = (item.costo * item.cantidad);
+                        return `
+                                    <tr>
+                                        <td class="ps-3 fw-semibold text-dark text-truncate" style="max-width: 220px;" title="${item.nombre}">
+                                            ${item.nombre}
+                                        </td>
+                                        <td>
+                                            <input type="text"
+                                                   class="form-control form-control-sm input-lote"
+                                                   placeholder="Lote..."
+                                                   value="${escapeHtml(item.lote)}"
+                                                   data-index="${index}"
+                                                   required />
+                                        </td>
+                                        <td>
+                                            <input type="date"
+                                                   class="form-control form-control-sm input-vence"
+                                                   value="${item.vencimiento}"
+                                                   data-index="${index}"
+                                                   required />
+                                        </td>
+                                        <td>
+                                            <input type="number"
+                                                   step="0.01"
+                                                   min="0"
+                                                   class="form-control form-control-sm text-end input-costo"
+                                                   value="${item.costo.toFixed(2)}"
+                                                   data-index="${index}" />
+                                        </td>
+                                        <td>
+                                            <input type="number"
+                                                   min="1"
+                                                   class="form-control form-control-sm text-center input-cant"
+                                                   value="${item.cantidad}"
+                                                   data-index="${index}" />
+                                        </td>
+                                        <td class="text-end fw-bold text-dark">
+                                            Q ${subtotal.toFixed(2)}
+                                        </td>
+                                        <td class="text-end pe-3">
+                                            <button type="button" class="btn-trash-line btn-quitar-linea" data-index="${index}" title="Quitar">
+                                                <i class="bi bi-trash fs-5 pointer-events-none"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                    }).join("");
+
+                    contadorLineasTexto.textContent = `${lineas.length} artículo(s)`;
+                    actualizarResumen();
+                }
+
+                // Cambios de valores directos en la tabla
+                tbody.addEventListener("input", function (e) {
+                    const idx = parseInt(e.target.getAttribute("data-index"));
+                    if (isNaN(idx)) return;
+
+                    if (e.target.classList.contains("input-lote")) {
+                        lineas[idx].lote = e.target.value;
+                    } else if (e.target.classList.contains("input-vence")) {
+                        lineas[idx].vencimiento = e.target.value;
+                    } else if (e.target.classList.contains("input-costo")) {
+                        lineas[idx].costo = parseFloat(e.target.value) || 0;
+                        actualizarSubtotalFila(e.target.closest("tr"), lineas[idx]);
+                        actualizarResumen();
+                    } else if (e.target.classList.contains("input-cant")) {
+                        let cant = parseInt(e.target.value) || 1;
+                        if (cant < 1) cant = 1;
+                        lineas[idx].cantidad = cant;
+                        actualizarSubtotalFila(e.target.closest("tr"), lineas[idx]);
+                        actualizarResumen();
+                    }
+                });
+
+                function actualizarSubtotalFila(tr, item) {
+                    const subtotal = item.costo * item.cantidad;
+                    tr.children[5].textContent = `Q ${subtotal.toFixed(2)}`;
+                }
+
+                // Eliminar fila
+                tbody.addEventListener("click", function (e) {
+                    const btn = e.target.closest(".btn-quitar-linea");
+                    if (btn) {
+                        const idx = parseInt(btn.getAttribute("data-index"));
+                        lineas.splice(idx, 1);
+                        renderizarTabla();
+                    }
+                });
+
+                function actualizarResumen() {
+                    let total = 0;
+                    let unidades = 0;
+
+                    lineas.forEach(l => {
+                        total += (l.costo * l.cantidad);
+                        unidades += l.cantidad;
+                    });
+
+                    lblTotal.textContent = total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    lblSubtotalDetalle.textContent = `${lineas.length} artículos en la compra`;
+                    lblArticulosDistintos.textContent = lineas.length;
+                    lblUnidadesTotales.textContent = unidades;
+                }
+
+                // Abrir Modal de Confirmación con validación
+                document.getElementById("btnAbrirModalConfirmar").addEventListener("click", function () {
+                    if (lineas.length === 0) {
+                        alert("Debes agregar al menos un artículo a la compra.");
+                        return;
+                    }
+
+                    // Validar que todas las líneas tengan lote asignado
+                    const sinLote = lineas.some(l => !l.lote || l.lote.trim() === "");
+                    if (sinLote) {
+                        alert("Todos los artículos agregados deben tener un número de lote.");
+                        return;
+                    }
+
+                    const docNum = document.getElementById("Input_NumeroDocumento");
+                    if (docNum && (!docNum.value || docNum.value.trim() === "")) {
+                        alert("Por favor ingresa el número de documento de la compra.");
+                        docNum.focus();
+                        return;
+                    }
+
+                    new bootstrap.Modal(document.getElementById("modalConfirmarCompra")).show();
+                });
+
+                // Enviar formulario (Generar campos hidden que espera ASP.NET Core)
+                form.addEventListener("submit", function () {
+                    hiddenContainer.innerHTML = "";
+                    lineas.forEach((item, i) => {
+                        hiddenContainer.innerHTML += `
+                                    <input type="hidden" name="Input.Lineas[${i}].IdArticulo" value="${item.idArticulo}" />
+                                    <input type="hidden" name="Input.Lineas[${i}].Lote" value="${escapeHtml(item.lote)}" />
+                                    <input type="hidden" name="Input.Lineas[${i}].FechaVencimiento" value="${item.vencimiento}" />
+                                    <input type="hidden" name="Input.Lineas[${i}].CostoUnitario" value="${item.costo}" />
+                                    <input type="hidden" name="Input.Lineas[${i}].Cantidad" value="${item.cantidad}" />
+                                `;
+                    });
+                });
+
+                // Botón Limpiar
+                document.getElementById("btnLimpiarCompra").addEventListener("click", function () {
+                    form.reset();
+                    lineas = [];
+                    renderizarTabla();
+                });
+
+                function escapeHtml(text) {
+                    return (text || "").toString().replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">");
+                }
+            });
+        </script>
+    }
